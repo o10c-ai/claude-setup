@@ -170,4 +170,4 @@ cmux close-surface --surface surface:2
 
 ## Fallback
 
-If `cmux identify` fails (not running in cmux), use the Playwright MCP tools (`mcp__playwright__*`) as a fallback.
+If `cmux identify` fails (not running in cmux), browser automation is not available. Ask the user to test manually or switch to a cmux terminal.
