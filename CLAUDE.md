@@ -64,6 +64,13 @@ Serena MCP server runs locally as a launchd service on port 9121.
 - `write_memory` / `read_memory` - Cross-session persistence
 - `think_about_task_adherence` - Validate approach
 
+## Command Output Convention
+
+When providing shell commands for the user to run manually in their terminal, **always copy long commands to clipboard** using `pbcopy` instead of displaying them inline. Long commands displayed in chat get split across lines and break when pasted.
+
+- Commands longer than ~80 characters: `echo 'the full command' | pbcopy` then tell the user "Copied to clipboard — paste in your terminal."
+- Short commands (< 80 chars): displaying inline is fine.
+
 ## Personal Preferences
 
 - Prefer declarative Nix configurations
