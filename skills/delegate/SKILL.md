@@ -14,10 +14,20 @@ Opus (this session) → Kimi K2.5 (OpenCode) → Sonnet (judge)
 
 ## When to Use
 
-- >=3 file modifications with a clear pattern
-- Batch refactoring, boilerplate generation, documentation
-- Mechanical tasks where Kimi's speed outweighs its reasoning gap
-- NOT for: architecture decisions, security-sensitive code, complex debugging
+**Good fit (delegate):**
+- **10+ files** with the same mechanical pattern (add moduledocs, rename a symbol, apply a code mod)
+- Batch boilerplate generation (test stubs, PO file entries, config files)
+- Tasks where the **spec IS the value** — you want a reviewable contract before execution
+- Tasks you want to run in the background while doing other work
+
+**Bad fit (do it yourself):**
+- <30 targeted edits across files you already have in context — the spec overhead exceeds the edit time
+- Edits requiring **cultural/domain judgment** (e.g., French translations need nuance, not mechanical replacement)
+- Files you've been actively editing this session — you already have the mental model, transferring it to a spec is waste
+- Security-sensitive code, architecture decisions, complex debugging
+- When you can't parallelize — if you're blocked waiting for Kimi with nothing else to do, you lost the concurrency advantage
+
+**The threshold:** If writing the spec takes longer than doing the edits, don't delegate. Rule of thumb: delegate when `file_count × repetitiveness > context familiarity`.
 
 ## Workflow
 
