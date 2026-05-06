@@ -1,26 +1,32 @@
 #!/usr/bin/env bash
-# PreToolUse hook on the Bash tool — wraps the command so its combined
-# stdout/stderr passes through the secret redactor before Claude captures it.
+# PreToolUse hook on the Bash tool — selectively wraps commands whose
+# output is likely to surface secrets, so the wrapped form passes
+# through `redact-secrets.sh` before Claude captures it.
 #
-# Invoked by Claude Code's hook system. Reads the tool input JSON from stdin,
-# emits a hookSpecificOutput with `updatedInput.command` set to the wrapped
-# form. The Bash tool then executes the wrapped command instead of the
-# original — Claude only ever sees redacted output.
+# Why selective? Wrapping every command rewrites the tool input from
+# `mix test` to `( set -o pipefail; { mix test
+# } 2>&1 | …redact… )`, which makes Claude Code's `permissions.allow`
+# matcher fail to recognize broad rules like `Bash(mix:*)` — the
+# rewritten command no longer starts with `mix`. Result: every Bash
+# call prompts for permission. By wrapping ONLY commands that might
+# expose credentials, normal commands keep matching the allowlist.
 #
-# Wrapper structure:
-#   ( set -o pipefail; { ORIGINAL; } 2>&1 | redact-secrets.sh )
+# Risky-command criteria (any match → wrap):
+#   - Credential CLIs: op, gh auth, aws sts, gcloud auth print-…
+#   - Env-dump utilities: env (standalone), printenv, set
+#   - Reads of credential-shaped paths: *.env, */credentials*,
+#     *.aws/*, *.config/op/*
+#   - kubectl get/describe secret
 #
-# `pipefail` preserves the exit status of the inner command so failed
-# commands still report failure. The subshell isolates the option setting.
-# `2>&1` ensures stderr is also filtered.
+# Anything else passes through unchanged. Defense-in-depth covers the
+# common leak vectors; routine commands keep the allowlist working.
 
 set -euo pipefail
 
 REDACTOR="$HOME/.claude/hooks/redact-secrets.sh"
 
 # If the redactor isn't installed (e.g., between rebuilds), fail open —
-# return the input unchanged rather than blocking the user's work. The
-# alternative (blocking) breaks Claude Code in a way that's hard to debug.
+# return the input unchanged rather than blocking the user's work.
 if [ ! -x "$REDACTOR" ]; then
   cat
   exit 0
@@ -29,21 +35,42 @@ fi
 input=$(cat)
 orig_cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
 
-# Empty / missing command — pass through unchanged.
+# Empty / missing command — pass through.
 if [ -z "$orig_cmd" ]; then
   printf '%s' "$input"
   exit 0
 fi
 
-# Build the wrapped form. Use jq's @sh-style escaping by passing $orig_cmd
-# as a string arg into a jq expression; jq handles the quoting.
+# --- Risky-command detection -----------------------------------------
+
+# Match a credential CLI invoked as a command word (start of line, or
+# preceded by `;`, `&&`, `||`, `|`, `(`, or whitespace), and bounded on
+# the right so `MIX_ENV=` is not a false-positive for `env`.
+risky_cmd_re='(^|[[:space:];&|(])(op|printenv|env|set|gh[[:space:]]+auth|aws[[:space:]]+sts|gcloud[[:space:]]+auth[[:space:]]+print|kubectl[[:space:]]+(get|describe)[[:space:]]+secret)([[:space:]]|[|;&]|$)'
+
+# Match reads of credential-shaped paths anywhere in the command.
+risky_path_re='(\.env([[:space:]]|/|$)|/credentials([[:space:]]|/|$)|\.aws/|\.config/op/)'
+
+wrap=false
+if [[ "$orig_cmd" =~ $risky_cmd_re ]] || [[ "$orig_cmd" =~ $risky_path_re ]]; then
+  wrap=true
+fi
+
+# Safe path — emit no updatedInput, original command runs as-is. The
+# tool output is NOT redacted; that's the cost of preserving the
+# allowlist match.
+if [ "$wrap" = false ]; then
+  printf '%s' "$input"
+  exit 0
+fi
+
+# --- Wrap risky commands ---------------------------------------------
+
 wrapped=$(jq -nr \
   --arg orig "$orig_cmd" \
   --arg redactor "$REDACTOR" \
   '"( set -o pipefail; { " + $orig + "\n} 2>&1 | " + $redactor + " )"')
 
-# Return only the modification — Claude Code merges with the original
-# tool_input on its end. Setting `updatedInput.command` is sufficient.
 jq -nc \
   --arg cmd "$wrapped" \
   '{
