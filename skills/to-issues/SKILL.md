@@ -1,6 +1,6 @@
 ---
 name: to-issues
-description: Break a plan, spec, or PRD into Symphony-dispatchable Linear issues — vertical tracer-bullet slices as child issues of a feature Project, wired into a blockedBy DAG, plus a mandatory terminal integration issue. Tailored for the Symphony feature-branch workflow (Linear, not GitHub). Use when the user wants to convert a plan/PRD into implementation issues, break work into slices, or set up a feature for Symphony to run.
+description: Break a plan, spec, or PRD into Symphony-dispatchable Linear issues — vertical tracer-bullet slices as child issues of a feature Project, wired into a blockedBy DAG, plus a mandatory integration issue and a terminal human QA sign-off issue. Tailored for the Symphony feature-branch workflow (Linear, not GitHub). Use when the user wants to convert a plan/PRD into implementation issues, break work into slices, or set up a feature for Symphony to run.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
@@ -30,10 +30,14 @@ the agent container.
 A PRD = a Linear **Project** (the feature container) carrying the PRD as a
 **Project Document** (never an Issue — it must not be dispatchable). The Project
 owns one long-lived **feature branch**. Each **slice** is a child Issue that lands
-work on that branch. A single **terminal integration issue**, `blockedBy` every
-slice, owns the merge to the target ref. Because Symphony only dispatches unblocked
-issues, the integration issue becomes dispatchable exactly when all slices are done
-— no completion-detection logic anywhere.
+work on that branch. A single **integration issue** (AFK), `blockedBy` every
+slice, opens the PR to the target ref and flips the Project to Human Review. A
+final **QA issue** (HITL), `blockedBy` the integration issue, is the true terminal
+node: it carries a human-runnable QA script and gates the merge. Because Symphony
+only dispatches unblocked issues, the integration issue becomes dispatchable exactly
+when all slices are done — no completion-detection logic anywhere. The QA issue
+carries **no dispatch label**, so it never goes to an agent — it surfaces in `Todo`
+for the human exactly when integration lands.
 
 ### Linear placement
 
@@ -174,6 +178,23 @@ The integration issue body must spell out its duties: sync `base_ref` →
 feature branch, run full-feature validation, flip/verify the feature flag, open
 the **feature → `target_ref`** PR, and move the **Project** to Human Review.
 
+Then, **always append a terminal QA issue (HITL)** as the true end of the DAG,
+`blockedBy` the integration issue. **Omit `--label ready-for-agent`** so Symphony
+never dispatches it — it surfaces in `Todo` for the human once integration is
+`Done`:
+
+```
+linear issue create --team <team> --project "<project-slug>" \
+  --title "QA & sign-off <feature>" \
+  --description-file <qa-body.md> \
+  --state Todo
+linear issue relation add <qa-id> blocked-by <integration-id>
+```
+
+The QA issue is the merge gate: the human runs the QA script against the open PR
+and, on pass, approves/merges and moves the **Project** to `Done`; on fail, files
+a rework issue blocking the QA issue.
+
 Do NOT close or modify the PRD/Project document. Issues are created live in
 `Todo` (not `Backlog`) — the orchestrator's blocker gate only applies to `todo`
 state, and slice "done" must land in a `terminal_states` value (`Done`) for
@@ -196,6 +217,33 @@ prototype (state machine, schema, type shape), trimmed to the decision-rich part
 ## Blocked by
 
 - <issue identifier(s)>, or "None — can start immediately"
+```
+
+## QA issue body template
+
+```
+## Goal
+
+Human QA sign-off before the **feature → `<target_ref>`** PR is merged. The
+integration issue has already opened the PR and moved the Project to Human Review.
+
+## How to QA
+
+Step-by-step the human runs to exercise the feature end-to-end: env/URL to hit,
+flag to flip, sample inputs, what to click/call. Anchor each step to a PRD user
+story so coverage is traceable.
+
+## Expected results
+
+- [ ] Story 1 behaves as specified
+- [ ] Story 2 behaves as specified
+- [ ] No regression in <adjacent area>
+
+## Sign-off
+
+- [ ] All checks pass → approve & merge the PR, move Project to `Done`
+- [ ] Any check fails → file a rework issue (set it `blocking` this one)
+      describing the gap, leave this issue open
 ```
 
 ## Out of scope (flag, don't silently assume)
