@@ -71,6 +71,23 @@ When providing shell commands for the user to run manually in their terminal, **
 - Commands longer than ~80 characters: `echo 'the full command' | pbcopy` then tell the user "Copied to clipboard — paste in your terminal."
 - Short commands (< 80 chars): displaying inline is fine.
 
+## Bash Command Shape (permission-friendly)
+
+The global permission allowlist matches commands **per segment** — it cannot
+see inside parenthesized or multi-line blocks, so those always prompt even
+when every inner command is individually allowed.
+
+- **For read-only inspection** (rg/grep/find/cat/sed -n/…): prefer **separate
+  parallel Bash calls**, one command each. A single `&&` chain is fine when
+  order matters — but NOT for batched searches: `rg` exits non-zero on no
+  match and silently kills the rest of the chain.
+- **Do not** wrap independent read-only commands in `( … )` blocks or
+  newline-separated scripts just to label output sections — it converts zero
+  prompts into one prompt for pure cosmetics.
+- **Multi-line blocks are still right** for loops over many files, heredocs,
+  and anything needing shared shell state (env vars don't persist between
+  Bash calls) — there, one prompt is cheaper than N separate calls.
+
 ## Personal Preferences
 
 - Prefer declarative Nix configurations
