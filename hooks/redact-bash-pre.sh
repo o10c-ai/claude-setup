@@ -17,6 +17,13 @@
 #   - Reads of credential-shaped paths: *.env, */credentials*,
 #     *.aws/*, *.config/op/*
 #   - kubectl get/describe secret
+#   - echo/printf with a variable or command expansion ($NAME, ${…},
+#     $(…), backtick) — `echo $GH_TOKEN` would otherwise print a secret
+#     into context. Because the wrapped form no longer starts with
+#     `echo`, the global `Bash(echo:*)` allow rule deliberately fails
+#     to match, so expansion-bearing echo still prompts AND its output
+#     is redacted. Plain echo (incl. special params like $?) passes
+#     through and is covered by the allowlist. See docs/adr/0001.
 #
 # Anything else passes through unchanged. Defense-in-depth covers the
 # common leak vectors; routine commands keep the allowlist working.
@@ -51,8 +58,13 @@ risky_cmd_re='(^|[[:space:];&|(])(op|printenv|env|set|gh[[:space:]]+auth|aws[[:s
 # Match reads of credential-shaped paths anywhere in the command.
 risky_path_re='(\.env([[:space:]]|/|$)|/credentials([[:space:]]|/|$)|\.aws/|\.config/op/)'
 
+# Match echo/printf as a command word whose segment carries an
+# expansion: $NAME, ${…}, $(…), or a backtick. Special params ($?, $#,
+# $$, $!, $0-9) do NOT match — plain status echoes stay allowlisted.
+echo_leak_re='(^|[[:space:];&|(])(echo|printf)[^|;&]*(\$[{(A-Za-z_]|`)'
+
 wrap=false
-if [[ "$orig_cmd" =~ $risky_cmd_re ]] || [[ "$orig_cmd" =~ $risky_path_re ]]; then
+if [[ "$orig_cmd" =~ $risky_cmd_re ]] || [[ "$orig_cmd" =~ $risky_path_re ]] || [[ "$orig_cmd" =~ $echo_leak_re ]]; then
   wrap=true
 fi
 
