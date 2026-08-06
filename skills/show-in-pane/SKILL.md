@@ -1,11 +1,14 @@
 ---
 name: show-in-pane
-description: Show a rendered visual to the user in a live cmux split pane — a Markdown/Mermaid file, an SVG/HTML file, or a URL — degrading gracefully when cmux is absent. Use whenever the user should SEE a rendered artifact (a Mermaid diagram, a chart, a dev/prototype page, an HTML mockup) instead of reading raw markup or being asked to imagine a layout. This is the reusable display ladder behind grill-with-visuals' render paths. Complements the cmux-browser skill, which drives interactive browser automation (snapshot/click/fill); this one only opens and shows.
+description: Show a rendered visual to the user in a live cmux split pane — a Markdown/Mermaid file, an SVG/HTML file, a URL, a git diff, or a file preview (image/PDF/video/log) — degrading gracefully when cmux is absent. Use whenever the user should SEE a rendered artifact (a Mermaid diagram, a chart, a dev/prototype page, an HTML mockup, a reviewable diff) instead of reading raw markup or being asked to imagine a layout. This is the reusable display ladder behind grill-with-visuals' render paths. Complements the cmux-browser skill, which drives interactive browser automation (snapshot/click/fill); this one only opens and shows.
 ---
 
 # Show a visual in a pane
 
-Put a **real rendered pane** in front of the user rather than dumping raw markup or asking them to picture it. On cmux (the terminal this project runs in) that's a native split pane with live reload; off cmux, fall back down a ladder to the best available viewer.
+Put a **real rendered pane** in front of the user rather than dumping raw markup
+or asking them to picture it. On cmux (the terminal this project runs in) that's
+a native split pane with live reload; off cmux, fall back down a ladder to the
+best available viewer.
 
 ## Detect cmux first
 
@@ -23,28 +26,46 @@ If `cmux` is not on `PATH`, its CLI lives at:
 
 If neither signal fires, you're not in cmux → use the **Fallback ladder** below.
 
+## Etiquette (all cmux paths)
+
+- Pass `--focus false` / `--no-focus` where supported — open the pane *beside*
+  the user's work, don't yank their cursor into it.
+- Anchor to the caller workspace (`--workspace "$CMUX_WORKSPACE_ID"` on verbs
+  that take it) — the visually focused workspace may be a different one.
+- Reuse an existing helper pane for repeated shows (surfaces stack as tabs in
+  it); don't accumulate splits.
+
 ## Show it — by input type (cmux present)
 
 | You have… | Command | Notes |
 |---|---|---|
 | a Markdown file (incl. ` ```mermaid ` blocks) | `cmux markdown open <file>` | **Native Mermaid.js render + live reload.** Edit the file → the pane updates, no re-invoke. Bundles mermaid / vega / marked / highlight. |
+| a git diff to review | `cmux diff --unstaged` (or `--staged`, `--branch [--base <ref>]`, `--last-turn`, or a patch file / `-` stdin) | Rich side-by-side viewer in a split. `--layout unified` for narrow panes; `--cwd <repo>` when not invoked from the repo. The natural "look at what I changed" move before commit/review. |
 | a URL (dev server, prototype page) | `cmux browser open-split <url>` | Opens a WebKit browser pane beside the terminal. |
-| an SVG / HTML file | `cmux browser open-split <file-url>` or `cmux new-pane --type browser --direction right --url <url>` | Wrap a path as a `file://` URL. |
+| an SVG / HTML file | `cmux browser open-split <file-url>` or `cmux new-pane --type browser --direction right --url <url> --focus false` | Wrap a path as a `file://` URL. |
+| an image / PDF / video / log or any plain file | `cmux open <path> --no-focus` | Native file-preview tab. Takes several paths at once. For HTML prefer the browser row above (`open` shows a preview, doesn't run it). |
 
-**Mermaid / structural diagrams:** write the ` ```mermaid ` block into a scratch `.md`, `cmux markdown open` it, then **edit the file to revise** — the pane live-reloads. The file you looked at *is* the durable text (no screenshots).
+**Mermaid / structural diagrams:** write the ` ```mermaid ` block into a scratch
+`.md`, `cmux markdown open` it, then **edit the file to revise** — the pane
+live-reloads. The file you looked at *is* the durable text (no screenshots).
 
 ## Fallback ladder (headless / non-cmux)
 
 1. **Markdown / Mermaid** → `mmdflux --format text <file>` inline. ⚠ Tall output is **truncated** by the tool-output pane — this is degraded, not primary. If Unicode boxes munge, use `mmdflux --format ascii <file>`. (SVG: `mmdflux -f svg --svg-theme-auto <file>`.) `mmdflux` is a single Rust binary; it must be on `PATH` and de-quarantined (`xattr -c`) on macOS.
-2. **URL / HTML / SVG file** → `open <url-or-file>` (macOS) to hand it to the user's default browser.
-3. **Nothing available** → say so plainly and give the user the exact path/URL to open themselves. Never fabricate a screenshot or ask them to imagine the render.
+2. **URL / HTML / SVG / image / PDF** → `open <url-or-file>` (macOS) to hand it to the user's default viewer.
+3. **Diff** → `git diff` inline (rtk compacts it) — degraded but readable.
+4. **Nothing available** → say so plainly and give the user the exact path/URL to open themselves. Never fabricate a screenshot or ask them to imagine the render.
 
 ## Cleanup
 
-Panes and scratch files are throwaway. Close a browser surface when done (`cmux close-surface --surface surface:N`; list with `cmux list-pane-surfaces`) and delete scratch render files once their content is captured wherever it belongs.
+Panes and scratch files are throwaway. Close a browser surface when done
+(`cmux close-surface --surface surface:N`; list with `cmux list-pane-surfaces`)
+and delete scratch render files once their content is captured wherever it
+belongs.
 
 ## Related
 
 - **cmux-browser** skill — full interactive browser CLI (snapshot, click, fill, wait, eval). Use it when you need to *drive* a page; use *this* skill when you only need to *display* one.
 - **grill-with-visuals** (project skill) — both its render paths (Mermaid diagrams, UI variant pages) call this ladder.
+- Full upstream command catalogs (vendored on disk): `~/.config/nix/services/cmux-skills/skills/`.
 - cmux verbs reference: `cmux docs api|browser`, `cmux capabilities`.

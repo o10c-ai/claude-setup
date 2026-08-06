@@ -1,173 +1,85 @@
 ---
 name: cmux-browser
-description: Browser automation using cmux's built-in WebKit browser panes. Use when testing web apps, inspecting pages, filling forms, or interacting with local dev servers. Replaces Playwright MCP when running inside cmux terminal.
+description: Drive cmux's built-in WebKit browser panes — snapshot refs, DOM actions (click/fill/type), waits, screenshots, console/errors, cookies/storage, session state. Use when testing or debugging a LOCAL web app (dev server, prototype page, HTML artifact) from inside cmux; the pane stays visible beside the terminal. Complements show-in-pane (display-only) — use this skill when you need to interact with or inspect the page. For real-Chrome automation (logged-in sites, extensions), use claude-in-chrome instead.
 ---
 
 # cmux Browser Automation
 
-Use cmux's built-in browser panes for web testing and automation. The browser runs as a visible split pane with a full WebKit engine and a Playwright-like CLI API.
-
-## When to Use
-
-- Testing local dev servers (localhost)
-- Inspecting page structure and accessibility
-- Filling forms, clicking elements, navigating
-- Taking screenshots or reading page content
-- Any task that would normally use Playwright MCP
+cmux browser surfaces are WKWebView panes inside the workspace, driven by a
+Playwright-like CLI (`cmux browser …`, globally allowed, never prompts). The
+user sees everything you do, live, in a split beside the terminal.
 
 ## Prerequisites
 
-You must be running inside cmux terminal. Verify with:
+You must be inside cmux — `CMUX_WORKSPACE_ID` is set, or `cmux ping` → PONG.
+If not on `PATH`: `/Applications/cmux.app/Contents/Resources/bin/cmux`.
+Not in cmux → fall back to the claude-in-chrome MCP (real Chrome) or ask the
+user to test manually.
+
+## Etiquette (applies to every command here)
+
+- Anchor to the **caller workspace**: pass `--workspace "$CMUX_WORKSPACE_ID"`
+  when creating surfaces. The visually focused workspace may be a different one.
+- **Never steal focus**: pass `--focus false` on creation verbs; never call
+  `focus-pane` / `select-workspace` / `focus-window` unless the user asks.
+- Reuse one browser surface per task; don't open a new split per navigation.
+
+## Core loop
+
 ```bash
-cmux identify --json
+# 1. Open in the caller workspace; capture the returned surface ref (e.g. surface:7)
+cmux --json browser open http://localhost:3000 --workspace "$CMUX_WORKSPACE_ID"
+
+# 2. Wait, then snapshot (returns element refs like e10, e14)
+cmux browser surface:7 wait --load-state complete --timeout-ms 15000
+cmux browser surface:7 snapshot --interactive --compact
+
+# 3. Act using refs or CSS selectors; re-snapshot after mutations
+cmux browser surface:7 fill '#email' 'test@example.com'
+cmux browser surface:7 click 'button[type=submit]' --snapshot-after
+
+# 4. Verify
+cmux browser surface:7 wait --text 'Dashboard' --timeout-ms 15000
+cmux browser surface:7 get url
 ```
 
-If this fails, fall back to Playwright MCP tools instead.
+Snapshot refs are **temporary** — re-snapshot after navigation, modal or DOM
+changes. Use `--snapshot-after` on mutating actions to fold steps together.
 
-## Core Workflow
+## Command quick map
 
-### 1. Open a Browser Pane
-```bash
-# Open browser in a new split (visible next to terminal)
-cmux browser open https://localhost:3000
+| Need | Commands |
+|---|---|
+| Navigate | `goto <url>`, `back`, `forward`, `reload` |
+| Wait | `wait --selector / --text / --url-contains / --load-state / --function` |
+| Act | `click`, `dblclick`, `hover`, `type`, `fill`, `press`, `select`, `check`, `scroll` |
+| Read | `get url\|title\|text\|html\|value\|attr\|count`, `is visible\|enabled\|checked` |
+| Locate | `find role\|text\|label\|placeholder\|testid …`, `highlight <sel>` |
+| Debug | `console list`, `errors list`, `screenshot --out <path>`, `eval <js>` |
+| State | `cookies get/set/clear`, `storage local/session …`, `state save/load <path>` |
+| Tabs/frames/dialogs | `tab new/list/switch/close`, `frame <sel\|main>`, `dialog accept/dismiss` |
 
-# Or open in a specific direction
-cmux new-pane --type browser --url https://localhost:3000
-```
+Prefer `get` / `is` / `find` for scripted checks; screenshots and snapshots are
+for human review. Save screenshots to the session scratchpad (or a path the
+user names), not `/tmp` dumps they'll never find.
 
-### 2. Get Page Structure
-```bash
-# DOM snapshot with interactive element refs (like Playwright's accessibility tree)
-cmux browser snapshot --interactive
+Full catalog with exact flags (vendored, on disk — no fetch needed):
+`~/.config/nix/services/cmux-skills/skills/cmux-browser/SKILL.md` and
+`…/references/commands.md`. Live syntax: `cmux --help`.
 
-# Compact snapshot for large pages
-cmux browser snapshot --interactive --compact
-
-# Snapshot a specific section
-cmux browser snapshot --selector "main"
-```
-
-The snapshot returns element refs like `e10`, `e14` that you use for interactions.
-
-### 3. Interact with Elements
-```bash
-# Click an element by ref
-cmux browser click 'e14'
-
-# Type into an input
-cmux browser type 'e10' 'search query'
-
-# Fill a form field (clears first)
-cmux browser fill 'e5' 'username'
-
-# Press keyboard keys
-cmux browser press 'Enter'
-
-# Hover
-cmux browser hover 'e8'
-```
-
-### 4. Navigate
-```bash
-cmux browser goto https://localhost:3000/dashboard
-cmux browser back
-cmux browser forward
-cmux browser reload
-```
-
-### 5. Wait for Conditions
-```bash
-# Wait for element to appear
-cmux browser wait --selector '.loaded'
-
-# Wait for text content
-cmux browser wait --text 'Welcome'
-
-# Wait for URL change
-cmux browser wait --url-contains '/dashboard'
-
-# Wait for full page load
-cmux browser wait --load-state complete
-```
-
-### 6. Read Page Data
-```bash
-# Get current URL
-cmux browser url
-
-# Get page title
-cmux browser get title
-
-# Get text content of element
-cmux browser get text '.result-count'
-
-# Get element attribute
-cmux browser get attr 'e10' 'href'
-
-# Get element value (inputs)
-cmux browser get value 'e5'
-
-# Evaluate JavaScript
-cmux browser eval 'document.querySelectorAll(".item").length'
-```
-
-### 7. Find Elements
-```bash
-# Find by role
-cmux browser find role 'button'
-
-# Find by text
-cmux browser find text 'Submit'
-
-# Find by label
-cmux browser find label 'Email'
-
-# Find by test ID
-cmux browser find testid 'login-form'
-```
-
-## Multi-Surface Pattern
-
-When working with multiple browser panes, specify the surface:
-```bash
-cmux browser --surface surface:2 snapshot --interactive
-cmux browser --surface surface:2 click 'e5'
-```
-
-List all surfaces to find browser panes:
-```bash
-cmux list-pane-surfaces
-```
-
-## Typical Test Flow
+## Debug capture pattern
 
 ```bash
-# 1. Open browser to dev server
-cmux browser open http://localhost:4000
-
-# 2. Wait for page load
-cmux browser wait --load-state complete
-
-# 3. Inspect the page
-cmux browser snapshot --interactive
-
-# 4. Interact (using refs from snapshot)
-cmux browser fill 'e5' 'test@example.com'
-cmux browser fill 'e8' 'password123'
-cmux browser click 'e12'
-
-# 5. Verify result
-cmux browser wait --text 'Dashboard'
-cmux browser get title
+cmux browser surface:7 console list
+cmux browser surface:7 errors list
+cmux browser surface:7 screenshot --out <scratchpad>/failure.png
 ```
 
 ## Cleanup
 
 ```bash
-# Close the browser surface when done
-cmux close-surface --surface surface:2
+cmux close-surface --surface surface:7   # list with: cmux list-pane-surfaces
 ```
 
-## Fallback
-
-If `cmux identify` fails (not running in cmux), browser automation is not available. Ask the user to test manually or switch to a cmux terminal.
+Close surfaces you opened once the task is done, unless the user is still
+looking at the result.

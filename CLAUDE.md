@@ -88,6 +88,25 @@ when every inner command is individually allowed.
   and anything needing shared shell state (env vars don't persist between
   Bash calls) — there, one prompt is cheaper than N separate calls.
 
+## cmux (the terminal these sessions run in)
+
+Sessions usually run inside cmux (`CMUX_WORKSPACE_ID` set / `cmux ping` → PONG;
+`Bash(cmux:*)` is allowlisted, so cmux calls never prompt).
+
+- **Show, don't paste:** when the user should *see* something rendered — a
+  diagram, a diff, a dev page, an image/PDF — open it in a split pane instead of
+  dumping text. The `show-in-pane` skill is the ladder (`cmux markdown open`,
+  `cmux diff --unstaged|--branch`, `cmux browser open-split`, `cmux open`).
+  Interactive local web testing: `cmux-browser` skill.
+- **Never steal focus:** pass `--focus false` / `--no-focus` where supported;
+  never call `focus-pane` / `select-workspace` / `focus-window` unprompted, and
+  anchor creation verbs with `--workspace "$CMUX_WORKSPACE_ID"` — the user may
+  be looking at a different workspace.
+- **Long autonomous work:** `cmux set-progress <0-1> --label "…"` at milestones
+  (+ `cmux clear-progress` when done); `cmux notify --title "…"` on completing
+  something the user likely walked away from. Per-session status icons are
+  already handled by hooks — don't duplicate those.
+
 ## Personal Preferences
 
 - Prefer declarative Nix configurations
