@@ -6,7 +6,7 @@ description: "Drive a long task to a checkable exit predicate without stopping, 
 # Autonomous run
 
 Distilled from pstack's `autonomous-run`, `pause-safely`, and `session-pickup`
-playbooks (`services/pstack-claude/plugins/pstack/skills/poteto-mode/playbooks/`),
+playbooks (`vendor/pstack-claude/plugins/pstack/skills/poteto-mode/playbooks/` in the claude-setup checkout),
 adapted to this setup: no `/loop`, no `AskUserQuestion`, decision trail committed.
 
 Three modes. Pick the one the request names.
@@ -30,10 +30,11 @@ Three modes. Pick the one the request names.
    `until` loop. No event gets a fixed-interval poll sized to when the result is
    worth re-checking. `/loop` is disabled by `disableBundledSkills`; if it is
    ever re-enabled it replaces the poll case only.
-3. Each iteration makes the smallest change the evidence justifies, verifies it
-   against the predicate on the real artifact, commits if it advanced, reverts
-   what did not help. Belt-and-suspenders that "might help" gets reverted, not
-   left to ride. Verify each unit before starting the next.
+3. Run `/implement` for the unit. Each iteration makes the smallest change the
+   evidence justifies, verifies it against the predicate on the real artifact,
+   commits if it advanced, reverts what did not help. Belt-and-suspenders that
+   "might help" gets reverted, not left to ride. Verify each unit before
+   starting the next.
 4. Mid-run discoveries are yours. Fix broken tooling, related bugs, flaky
    verifiers, and drift yourself. Out-of-band fixes go in their own commit or
    PR. Do not park reversible work for the human. Surface only irreversible
@@ -43,9 +44,17 @@ Three modes. Pick the one the request names.
 5. Checkpoint every iteration via the **show-me-your-work** skill, one row for
    what changed and whether the predicate moved. Milestones also go to
    `cmux set-progress <0-1> --label "…"`.
-6. Stop when the predicate is met. A plateau is not a stop; pivot the approach.
-   Surface a genuine dead end rather than spinning. Never relax the predicate
-   to declare victory. On completion `cmux clear-progress` and `cmux notify`.
+6. When the predicate is met, run `/review` on the head before opening the PR.
+   A checkpoint by default: the issue's named seats, the seats whose triggers
+   fire on the diff, and the two contract seats. The full committee when the
+   issue's Review gate is `interaction` or the issue is the last slice of its
+   Project. The verdict and the head SHA go in the trail. A ❌ is fixed and
+   re-adjudicated by a fresh reviewer, never closed by the author; a new head
+   gets a new verdict.
+7. Stop when the predicate is met and the review verdict is clean. A plateau
+   is not a stop; pivot the approach. Surface a genuine dead end rather than
+   spinning. Never relax the predicate to declare victory. On completion
+   `cmux clear-progress` and `cmux notify`.
 
 **Reply:** the exit condition, iterations run, what landed, what was discarded,
 final predicate state, trail path, and the Attention section from the trail

@@ -5,9 +5,10 @@ description: Grilling session that challenges your plan against the existing dom
 
 > OWN override of the vendored mattpocock-skills `grill-with-docs`. Upstream body
 > kept; three rules added from pstack (classify before asking, design it twice,
-> evidence in ADRs). Reference formats stay upstream:
-> `~/.config/nix/services/mattpocock-skills/skills/engineering/grill-with-docs/CONTEXT-FORMAT.md`
-> and `ADR-FORMAT.md` in the same dir.
+> evidence in ADRs). Reference formats are bundled in this skill directory:
+> `CONTEXT-FORMAT.md` and `ADR-FORMAT.md` (copies of the upstream files, which
+> live at `vendor/mattpocock-skills/skills/engineering/grill-with-docs/` in the
+> claude-setup checkout).
 
 <what-to-do>
 
@@ -83,7 +84,7 @@ When the user states how something works, check whether the code agrees. If you 
 
 ### Update CONTEXT.md inline
 
-When a term is resolved, update `CONTEXT.md` right there. Don't batch these up; capture them as they happen. Use the upstream CONTEXT-FORMAT.
+When a term is resolved, update `CONTEXT.md` right there. Don't batch these up; capture them as they happen. Use the bundled `CONTEXT-FORMAT.md`.
 
 `CONTEXT.md` should be totally devoid of implementation details. It is a glossary and nothing else.
 
@@ -95,7 +96,7 @@ Only offer to create an ADR when all three are true:
 2. **Surprising without context.** A future reader will wonder "why did they do it this way?"
 3. **The result of a real trade-off.** There were genuine alternatives and you picked one for specific reasons.
 
-If any of the three is missing, skip the ADR. Use the upstream ADR-FORMAT. **Evidence, not prose:** when a prototype settled the decision, the ADR cites its branch or SHA and any screenshot or measurement path. When two candidate shapes were compared, the ADR lists both and the reason the loser lost.
+If any of the three is missing, skip the ADR. Use the bundled `ADR-FORMAT.md`. **Evidence, not prose:** when a prototype settled the decision, the ADR cites its branch or SHA and any screenshot or measurement path. When two candidate shapes were compared, the ADR lists both and the reason the loser lost.
 
 ### Hand-off
 

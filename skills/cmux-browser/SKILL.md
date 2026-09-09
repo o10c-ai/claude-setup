@@ -64,7 +64,7 @@ for human review. Save screenshots to the session scratchpad (or a path the
 user names), not `/tmp` dumps they'll never find.
 
 Full catalog with exact flags (vendored, on disk — no fetch needed):
-`~/.config/nix/services/cmux-skills/skills/cmux-browser/SKILL.md` and
+`vendor/cmux-skills/skills/cmux-browser/SKILL.md` (claude-setup checkout) and
 `…/references/commands.md`. Live syntax: `cmux --help`.
 
 ## Debug capture pattern

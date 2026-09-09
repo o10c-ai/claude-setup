@@ -1,12 +1,7 @@
 # Global Claude Code configuration
 
-## Declarative config — never edit `~/.claude/` directly
-
-Files there are Nix-managed symlinks. Edit the sources instead:
-- `~/.config/nix/home-manager/claude-code/` — CLAUDE.md, settings.json, output-styles, agents, hooks
-- `~/.config/nix/home-manager/claude-code.nix` — symlink definitions
-
-Apply with `darwin-rebuild switch --flake ~/.config/nix`. Secrets live in macOS Keychain, never in files.
+> Shipped by the claude-setup repo. The operator's private `~/.claude/CLAUDE.md`
+> `@`-imports this file and adds machine-specific sections.
 
 ## Shell commands
 

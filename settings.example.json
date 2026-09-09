@@ -1,0 +1,145 @@
+{
+  "_comment": "Example of the lean preset (docs/context-budget.md, ADR 0001). The operator's real settings.json stays private and read-only; copy this file, adjust statusLine and permissions.allow to taste.",
+  "outputStyle": "ConciseEng",
+  "statusLine": {
+    "type": "command",
+    "command": "npx ccstatusline@latest"
+  },
+  "enabledPlugins": {},
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "medium",
+  "disableBundledSkills": true,
+  "disableWorkflows": true,
+  "disableClaudeAiConnectors": true,
+  "disableArtifact": true,
+  "permissions": {
+    "deny": [
+      "EnterPlanMode",
+      "ExitPlanMode",
+      "DesignSync",
+      "NotebookEdit",
+      "SendMessage",
+      "PushNotification",
+      "RemoteTrigger",
+      "ReportFindings",
+      "ScheduleWakeup",
+      "AskUserQuestion",
+      "CronCreate",
+      "CronDelete",
+      "CronList"
+    ],
+    "allow": [
+      "Bash(rg:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(fd:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(file:*)",
+      "Bash(which:*)",
+      "Bash(command -v:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(tr:*)",
+      "Bash(cut:*)",
+      "Bash(diff:*)",
+      "Bash(stat:*)",
+      "Bash(du:*)",
+      "Bash(readlink:*)",
+      "Bash(jq:*)",
+      "Bash(sed -n:*)",
+      "Bash(xargs rg:*)",
+      "Bash(echo:*)",
+      "Bash(cd:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(nix flake show:*)",
+      "Bash(nix eval:*)",
+      "Bash(launchctl list:*)",
+      "Bash(launchctl print:*)",
+      "Bash(rtk read:*)",
+      "Bash(rtk grep:*)",
+      "Bash(rtk find:*)",
+      "Bash(rtk ls:*)",
+      "Bash(rtk wc:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:term.cmux.dev)",
+      "WebFetch(domain:www.cmux.dev)",
+      "Bash(cmux:*)"
+    ]
+  },
+  "env": {
+    "ENABLE_CLAUDEAI_MCP_SERVERS": "false"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/rtk-rewrite.sh"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/redact-bash-pre.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat | cmux claude-hook session-start 2>/dev/null; cmux set-status claude \"session started\" --icon sparkle --color \"#d4a0ff\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat >/dev/null; cmux set-status claude \"thinking\" --icon brain.head.profile --color \"#ff9500\" 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/concise-nudge.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat | cmux claude-hook stop 2>/dev/null; cmux set-status claude \"idle\" --icon checkmark.circle --color \"#30d158\" 2>/dev/null; cmux set-progress 0 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); cmux claude-hook notification <<< \"$input\" 2>/dev/null || cmux notify --title 'Claude Code' --body \"$(echo \"$input\" | jq -r '.message // \"Task update\"')\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -90,6 +90,15 @@ or that changes a user-facing interaction, gets `Review gate: interaction`. Its
 PR waits for the operator to review screenshots before merge. Every other slice
 is `Review gate: none` and runs fully autonomously.
 
+**Named review seats.** Every slice ends with a `/review` checkpoint: the seats
+whose triggers fire on the diff (`review: auto`) plus the two contract seats.
+Name a seat (`review: auto + <seat>, <seat>`) only when you know a hazard the
+diff cannot show: a cross-PR contract this slice sets up for a later slice, a
+write path that already has another caller, a migration a later slice depends
+on. Seat names come from the target repo's `.claude/review.md` `## Seats`
+table; without a profile, only `auto` is valid. Do not name seats by reflex;
+a checkpoint that runs the whole catalogue is a full committee by another name.
+
 **Prototype evidence.** A decision settled by a prototype carries its branch or
 SHA in the body. The implementing session starts from that, not from prose.
 
@@ -102,6 +111,7 @@ Present a numbered list. For each slice: **Title**, **Predicate** (one line),
 - Order right (riskiest first, harness before features)?
 - Dependency edges correct or over-specified?
 - Review gates right?
+- Named seats justified by a hazard the diff cannot show?
 
 Iterate until approved. This is the one human checkpoint a long run earns.
 Publishing is a shared-state act: show the exact commands, get an explicit go.
@@ -132,7 +142,11 @@ Do not modify the PRD document. Issues go to `Todo`.
 
 Reply with the Project link and the issue ids in order. Each issue is picked up
 in its own session with `autonomous-run <issue-id>`, which reads the Predicate as
-its exit condition and commits `.audit/<issue-id>.tsv` on the slice branch.
+its exit condition, runs `/implement` for the unit, ends the issue with a
+`/review` checkpoint (named + diff-fired + contract seats), and commits
+`.audit/<issue-id>.tsv` on the slice branch. Issues marked `Review gate:
+interaction` and the last slice of the Project get the full committee on the
+merge-ready head instead of a checkpoint.
 
 ## Slice issue body template
 
@@ -159,6 +173,7 @@ line, the screen state, the API response.
 - unit: <test file and the case it gains, and the command>
 - live: <how to drive the real surface, and the pass condition>
 - perf: <metric, probe, trunk baseline, failing number> or "n/a: no hot path"
+- review: auto | auto + <seat>, <seat>   (seat names from the target repo's `.claude/review.md` `## Seats` table)
 
 ## Review gate
 

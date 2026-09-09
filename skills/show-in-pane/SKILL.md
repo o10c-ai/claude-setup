@@ -66,6 +66,6 @@ belongs.
 ## Related
 
 - **cmux-browser** skill — full interactive browser CLI (snapshot, click, fill, wait, eval). Use it when you need to *drive* a page; use *this* skill when you only need to *display* one.
-- **grill-with-visuals** (project skill) — both its render paths (Mermaid diagrams, UI variant pages) call this ladder.
-- Full upstream command catalogs (vendored on disk): `~/.config/nix/services/cmux-skills/skills/`.
+- **grill-with-visuals** (contract skill) — both its render paths (Mermaid diagrams, UI variant pages) call this ladder.
+- Full upstream command catalogs (vendored on disk): `vendor/cmux-skills/skills/` in the claude-setup checkout.
 - cmux verbs reference: `cmux docs api|browser`, `cmux capabilities`.
