@@ -10,7 +10,7 @@ CLI-flag-only: it can't be set declaratively via settings.json, and a wrapper
 alias breaks subcommands (`claude mcp list --allowedTools …` → unknown
 option). We chose to accept Bash-search and adapt the permission layer: a
 global, Nix-managed `permissions.allow` list in
-`home-manager/claude-code/settings.json`, scoped to the **search set**,
+your `settings.json` (shipped here as `settings.example.json`), scoped to the **search set**,
 verb-scoped **workflow reads**, and **safe prefixes** (see CONTEXT.md), plus
 `echo`/`cd`. Network tools (`curl`, `gh api`) and bare write-capable tools
 (`sed`, `awk`, `python3`) are deliberately excluded globally — a read-shaped
@@ -36,6 +36,6 @@ the allowlist match for these commands.
   the rtk hook's self-allow.
 - `Bash(git branch:*)` was considered and rejected: the same prefix matches
   `git branch -D`.
-- The user-level `~/.claude/settings.local.json` was absorbed into the Nix
+- The user-level `~/.claude/settings.local.json` was absorbed into the managed
   file and emptied; it remains the writable landing zone for future "always
-  allow" clicks and should be harvested into Nix periodically.
+  allow" clicks and should be harvested into the managed file periodically.
