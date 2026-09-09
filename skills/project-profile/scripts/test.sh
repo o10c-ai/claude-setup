@@ -54,6 +54,11 @@ expect "not applicable honoured" 0 '^grill-with-visuals: not-applicable$' -- "$c
 printf 'delegate: nope\n' > "$b/.claude/implement.md"
 expect "dangling delegate flagged" 1 "delegate: names 'nope'" -- "$chk" --root "$b" implement
 expect "unknown contract is usage error" 2 'unknown contract' -- "$chk" --root "$b" bogus
+# named path exists but is git-ignored
+g="$tmp/ignored"; mkdir -p "$g/.claude/scripts"; ( cd "$g" && git init -q )
+printf '.claude/*\n!.claude/*.md\n' > "$g/.gitignore"; printf '#!/bin/sh\n' > "$g/.claude/scripts/iso.sh"
+printf '# o\n\n## Isolation\n\n- hook: `.claude/scripts/iso.sh`\n' > "$g/.claude/orchestrate.md"
+expect "git-ignored named path flagged" 1 'which is git-ignored' -- "$chk" --root "$g" orchestrate
 
 # 6. orchestrate launcher, generic path (no hook), in a fixture repo
 l="$setup/skills/orchestrate/scripts/launch.sh"

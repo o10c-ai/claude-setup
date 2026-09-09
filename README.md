@@ -89,7 +89,7 @@ after changing them.
 Run `/project-profile init` in the project (or
 `skills/project-profile/scripts/init-profile.sh`): it copies
 `examples/<stack>/.claude/*.md` or a skeleton, fixes `.gitignore`
-(`.claude/*` + `!.claude/*.md` + `!.claude/docs/`), and leaves `TODO:` markers.
+(`.claude/*` + `!.claude/*.md` + `!.claude/docs/` + `!.claude/scripts/`), and leaves `TODO:` markers.
 `/project-profile` (doctor) then reports what is still missing; the contract
 skills refuse to run on an `invalid` profile. The interface is
 `profiles/slots.tsv`, described in `docs/profiles.md`.

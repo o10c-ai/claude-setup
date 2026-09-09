@@ -40,8 +40,8 @@ mkdir -p "$root/.claude"
 if git -C "$root" rev-parse --show-toplevel >/dev/null 2>&1 && git -C "$root" check-ignore -q .claude/implement.md 2>/dev/null; then
   # git cannot re-include a file under an excluded directory: '.claude/' must become '.claude/*'.
   [ -f "$root/.gitignore" ] && sed -i.bak -E 's#^(\.claude)/[[:space:]]*$#\1/*#' "$root/.gitignore" && rm -f "$root/.gitignore.bak"
-  printf '\n# claude-setup profiles and seat rubrics must be tracked (docs/profiles.md)\n!.claude/*.md\n!.claude/docs/\n' >> "$root/.gitignore"
-  printf '.gitignore: rewrote .claude/ -> .claude/* and added !.claude/*.md, !.claude/docs/\n'
+  printf '\n# claude-setup profiles, seat rubrics and hooks must be tracked (docs/profiles.md)\n!.claude/*.md\n!.claude/docs/\n!.claude/scripts/\n' >> "$root/.gitignore"
+  printf '.gitignore: rewrote .claude/ -> .claude/* and added !.claude/*.md, !.claude/docs/, !.claude/scripts/\n'
 fi
 
 for c in "${contracts[@]}"; do

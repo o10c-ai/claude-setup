@@ -28,10 +28,11 @@ For each finding, do this, in order, and re-run until the summary has no `invali
 | Finding | Fix |
 |---|---|
 | `.claude/skills/<contract>/ exists and is silently shadowed` | Decompose the project skill into the profile (see `examples/phoenix/`), or rename it and put `delegate: <new-name>` on the profile's first line. Never leave a same-name skill. |
-| `is git-ignored` / `would be git-ignored` | In `.gitignore`, `.claude/` must become `.claude/*`, followed by `!.claude/*.md` and `!.claude/docs/`. Git cannot re-include a file under an excluded directory. |
+| `is git-ignored` / `would be git-ignored` | In `.gitignore`, `.claude/` must become `.claude/*`, followed by `!.claude/*.md`, `!.claude/docs/` and `!.claude/scripts/`. Git cannot re-include a file under an excluded directory. |
 | `missing required slot '## X'` | Add the section. The finding carries the slot's description; the example profile shows a filled one. |
 | `slot '## X' is empty` / `has no table` / `lacks a 'Col' column` | The contract reads that slot by structure, not prose. Match the shape in `profiles/slots.tsv`. |
 | `'## X' names <path>, which does not exist` | Create the rubric or doc, or drop the row. A seat without a rubric file cannot be adjudicated. |
+| `'## X' names <path>, which is git-ignored` | Un-ignore it (`!.claude/docs/`, `!.claude/scripts/`); a fresh clone must see every path a profile names. |
 | `unresolved placeholder` | Replace `TODO:`, `<app>`, `<lib>`, `<fill …>` with the project's real names and commands. Verify commands by running them, not by assuming. |
 | `warning: section '## X' is not a slot` | Harmless. Either delete it or move its content into a slot the contract reads. |
 | `delegate:` warning | Migration state. Plan the decomposition; it is not a steady state. |

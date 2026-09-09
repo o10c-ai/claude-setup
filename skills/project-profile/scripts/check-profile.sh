@@ -56,6 +56,19 @@ table_col() {
 # Only tokens with a slash count as paths; patterns (<slug>, *, {a,b}) and git refs are skipped.
 paths_in() { grep -oE '`[^`]+`|[A-Za-z0-9_./-]+\.(md|sh|exs|ex|ts|js|py|json|yaml|yml)' | sed -E 's/^`|`$//g' | grep -E '^[A-Za-z0-9_.]' | grep -vE '^(https?:|tmp/|_build|deps/|origin/|upstream/|refs/|HEAD)|[<>*{}]' | grep -E '/' || true; }
 
+# Every named path must exist AND be tracked-able: a fresh clone must see it.
+check_paths() { # <slot> <paths, one per line>; prints findings; returns 1 if any
+  local slot="$1" bad=0 p
+  while IFS= read -r p; do
+    [ -n "$p" ] || continue
+    if [ ! -e "$root/$p" ]; then say "$rel: '## $slot' names $p, which does not exist"; bad=1
+    elif git -C "$root" rev-parse --show-toplevel >/dev/null 2>&1 && git -C "$root" check-ignore -q "$p" 2>/dev/null; then
+      say "$rel: '## $slot' names $p, which is git-ignored (a fresh clone will not have it; add '!$(printf '%s' "$p" | cut -d/ -f1-2)/' to .gitignore)"; bad=1
+    fi
+  done <<< "$2"
+  return $bad
+}
+
 for c in "${contracts[@]}"; do
   f="$root/.claude/$c.md"
   rel=".claude/$c.md"
@@ -70,13 +83,13 @@ for c in "${contracts[@]}"; do
     [ "$status" = invalid ] || status=absent
     # Absent is fine (fallback) unless something else already failed.
     if git -C "$root" rev-parse --show-toplevel >/dev/null 2>&1 && git -C "$root" check-ignore -q "$rel" 2>/dev/null; then
-      warn "would be git-ignored; ignore '.claude/*' (not '.claude/') and add '!.claude/*.md' and '!.claude/docs/' before creating it"
+      warn "would be git-ignored; ignore '.claude/*' (not '.claude/') and add '!.claude/*.md', '!.claude/docs/' and '!.claude/scripts/' before creating it"
     fi
     printf '%s: %s\n' "$c" "$status"; [ "$status" = invalid ] && overall=1; continue
   fi
 
   if git -C "$root" rev-parse --show-toplevel >/dev/null 2>&1 && git -C "$root" check-ignore -q "$rel" 2>/dev/null; then
-    fail "is git-ignored; ignore '.claude/*' (not '.claude/') and add '!.claude/*.md' and '!.claude/docs/' (profiles must be tracked)"
+    fail "is git-ignored; ignore '.claude/*' (not '.claude/') and add '!.claude/*.md', '!.claude/docs/' and '!.claude/scripts/' (profiles must be tracked)"
   fi
 
   first="$(grep -m1 -ve '^[[:space:]]*$' "$f" || true)"
@@ -117,16 +130,10 @@ for c in "${contracts[@]}"; do
         printf '%s\n' "$body" | grep -q '^|' || { fail "slot '## $slot' has no table (expected a column '$col')"; continue; }
         cells="$(printf '%s\n' "$body" | table_col "$col")"
         [ -n "$cells" ] || { fail "slot '## $slot' table lacks a '$col' column"; continue; }
-        printf '%s\n' "$cells" | paths_in | sort -u | while IFS= read -r p; do
-          [ -e "$root/$p" ] || say "$rel: '## $slot' names $p, which does not exist"
-        done
-        printf '%s\n' "$cells" | paths_in | sort -u | while IFS= read -r p; do [ -e "$root/$p" ] || exit 9; done || status=invalid
+        check_paths "$slot" "$(printf '%s\n' "$cells" | paths_in | sort -u)" || status=invalid
         ;;
       paths)
-        printf '%s\n' "$body" | paths_in | sort -u | while IFS= read -r p; do
-          [ -e "$root/$p" ] || say "$rel: '## $slot' names $p, which does not exist"
-        done
-        printf '%s\n' "$body" | paths_in | sort -u | while IFS= read -r p; do [ -e "$root/$p" ] || exit 9; done || status=invalid
+        check_paths "$slot" "$(printf '%s\n' "$body" | paths_in | sort -u)" || status=invalid
         ;;
     esac
   done < <(grep -v '^#' "$slots")

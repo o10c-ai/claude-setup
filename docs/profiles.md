@@ -96,6 +96,7 @@ rule must be:
 .claude/*
 !.claude/*.md
 !.claude/docs/
+!.claude/scripts/
 ```
 
 `init-profile.sh` makes this edit; the doctor flags a git-ignored profile.

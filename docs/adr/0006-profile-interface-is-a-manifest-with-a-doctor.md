@@ -42,7 +42,9 @@ authored, never inherited.
 - `scripts/test.sh` pins the behaviour against the shipped example and
   fixtures; run it after touching either script or the manifest.
 - `.gitignore` guidance changes: `.claude/` must become `.claude/*` before
-  `!.claude/*.md` and `!.claude/docs/` can re-include profiles and rubrics.
+  `!.claude/*.md`, `!.claude/docs/` and `!.claude/scripts/` can re-include
+  profiles, rubrics and hooks. The doctor also fails a named path that exists
+  but is git-ignored, since a fresh clone would not have it.
   The earlier advice in ADR 0002 and the README did not work.
 - The Phoenix example now references only the seat file it ships; the other
   seats are listed as prose so the example itself passes the doctor apart
