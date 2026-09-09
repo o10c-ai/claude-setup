@@ -24,6 +24,12 @@ Three modes. Pick the one the request names.
    gate` as the only allowed pause (screenshots to the operator before merge).
    Branch off the issue's `base_ref`, one PR per issue, trail at
    `.audit/<issue-id>.tsv`.
+   **Opening phase, every time** (first run or a restart after preemption by
+   `orchestrate`): `git status` and `git log/diff base_ref..HEAD`. Judge what is
+   already there against the predicate. Keep what serves it; revert by commit
+   what does not, one trail row per revert with the SHA. Nothing is discarded by
+   default and nothing is kept on faith. Do not read a predecessor's notes; you
+   have none, by design.
 2. Pick the wake mechanism. An event to watch (CI, a merge, a ref advancing, a
    log line) gets a `Monitor` whose filter covers every terminal state, success
    and failure. A single condition gets `Bash` with `run_in_background` and an
@@ -58,7 +64,14 @@ Three modes. Pick the one the request names.
 
 **Reply:** the exit condition, iterations run, what landed, what was discarded,
 final predicate state, trail path, and the Attention section from the trail
-review.
+review. **When spawned by `orchestrate`**, reply with the fragment shape from
+that skill instead, and nothing else. You cannot ask mid-flight: a question
+that needs a product call ends the run with `predicate: blocked` and the
+question under `open:`.
+
+**Turn budget.** When the brief names one, respect it: commit wip at every green
+cycle so a hard stop loses at most one cycle, and write a trail row at least
+every few tool calls so the orchestrator can see you are alive.
 
 ## Pause
 

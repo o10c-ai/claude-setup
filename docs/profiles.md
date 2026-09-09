@@ -58,6 +58,15 @@ project docs and scripts; only the contract's phases are fixed.
 | `## Cleanup` | Paths to sweep before the session ends |
 | `## Known walls` | Path to the capability backlog |
 
+### `/orchestrate`
+
+| Slot | Contents | Default |
+|---|---|---|
+| `## Budgets` | per-implementer tool-call and wall-time caps, silence timeout | 40 calls / 45 min / 15 min silent |
+| `## Isolation` | worktree + state recipe that makes two implementers safe at once | none (serial only) |
+| `## Concurrency` | max implementers in flight when Isolation is defined | 1 |
+| `## Drift check` | extra documents the drift checker reads besides PRD, issues, synthesis | none |
+
 ## The same-name hazard
 
 Do **not** create a project skill with a contract skill's name. On Claude Code

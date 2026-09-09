@@ -28,7 +28,8 @@ flowchart LR
 | `grill-with-visuals` | same, plus a plan with UI or structural decisions | the above plus a design spec of HEEx/Mermaid fragments | yes; falls back to `grill-with-docs` |
 | `to-prd` | the grilled conversation | a local PRD with Definition of Done predicate, Data Shape, Verification Harness, Throughput Checkpoint | no |
 | `to-issues` | the PRD | Linear Project + child issues; each issue = one runnable Predicate = one PR = one session; bodies linted by `scripts/check-issue.sh` | no |
-| `autonomous-run <issue>` | one issue | a branch, a PR, `.audit/<issue-id>.tsv` | wraps two contracts |
+| `orchestrate <project>` | a Linear Project (PRD + issues) | one implementer per issue, `.audit/<project>/synthesis.md`, drift verdicts, the Project at its Definition of Done | yes (`## Budgets`, `## Isolation`, `## Concurrency`, `## Drift check`) |
+| `autonomous-run <issue>` | one issue (directly, or as an implementer spawned by `orchestrate`) | a branch, a PR, `.audit/<issue-id>.tsv`, a fragment | wraps two contracts |
 | `implement` | the issue, the profile's feedback loops | a committed, gate-passing change | yes |
 | `review` | the diff, the issue's `review:` line, the profile's seat catalogue | a verdict per seat with evidence, on one head SHA | yes |
 
@@ -53,6 +54,18 @@ named(issue.review line) ∪ fired(diff, profile.seats) ∪ {audit, regression}
   only on issues marked `Review gate: interaction` and on the last slice of a
   Project, whose predicate is the PRD's Definition of Done. Both on the
   merge-ready head SHA, before merge.
+
+## Context lifecycle of a multi-issue run (ADR 0005)
+
+`orchestrate` keeps the conductor's context bounded by construction: the intent
+once, one fragment per issue, one synthesis rewrite, one drift verdict. Each
+implementer is a fresh subagent under a turn budget the orchestrator measures
+from the trail. After every fragment a clean-context drift check compares the
+synthesis with the PRD and issues: execution drift re-briefs or preempts the
+implementer autonomously; intent drift pauses the run for the operator.
+Preemption is a hard stop; the replacement starts on the same branch and tree,
+judges the existing commits against the predicate, and receives nothing
+authored by its predecessor.
 
 ## Grill discipline carried through
 

@@ -4,16 +4,20 @@ pstack (`vendor/pstack-claude`) ships far more than the autonomy layer adopted
 here. The pieces below were read, judged useful, and deliberately not wired in.
 Each entry: what it does, why not now, and the trigger that reopens it.
 
-## orchestrate / autopilot playbooks and the `orch` CLI
+## orchestrate / autopilot playbooks and the `orch` CLI — partly adopted (2026-09-09)
 
 **What.** `poteto-mode/playbooks/orchestrate.md`, `autopilot-full.md`,
 `autopilot-stack.md`: a lead session that owns a queue of PRs, spawns one owner
 per PR, allocates file boundaries, holds merge authority, and runs standing
 orders on an audit tick. `orch` is the CLI that tracks the fleet.
-**Why not now.** One operator, one session at a time. Linear issues plus
-`autonomous-run <issue-id>` cover sequencing; a fleet lead has nothing to lead.
-**Revisit when.** Two or more issues of one Project are routinely run in
-parallel by separate sessions and merge ordering becomes a manual chore.
+**Adopted, scaled to one Project.** `skills/orchestrate` (ADR 0005): a thin
+orchestrator, one fresh implementer per issue under a turn budget, a synthesis,
+a clean-context drift check after every fragment, preemption as a hard stop.
+Serial by default; the reason was context lifecycle, not fleet throughput.
+**Still set aside.** File-boundary allocation, merge authority, standing orders
+on an audit tick, and the `orch` CLI.
+**Revisit when.** Parallel implementers are enabled through a profile
+`## Isolation` recipe and merge ordering becomes a manual chore.
 
 ## Ten live lanes and the mandatory perf gate
 
