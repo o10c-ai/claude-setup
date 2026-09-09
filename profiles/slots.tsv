@@ -18,6 +18,6 @@ grill-with-visuals	Capture	required	text	Spec destination and the durable curren
 grill-with-visuals	Cleanup	optional	text	Paths to sweep before the session ends
 grill-with-visuals	Known walls	optional	paths	Path to the capability backlog
 orchestrate	Budgets	optional	text	Per-implementer tool-call and wall-time caps, silence timeout (default 40 / 45 min / 15 min)
-orchestrate	Isolation	optional	text	Worktree + state recipe that makes two implementers safe at once (default: serial only)
+orchestrate	Isolation	optional	paths	Worktree + state recipe; launch.sh reads hook:, base_ref:, worktrees: keys (default: serial only, plain git worktree)
 orchestrate	Concurrency	optional	text	Max implementers in flight when Isolation is defined (default 1)
 orchestrate	Drift check	optional	text	Extra documents the drift checker reads besides PRD, issues, synthesis

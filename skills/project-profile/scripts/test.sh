@@ -55,4 +55,19 @@ printf 'delegate: nope\n' > "$b/.claude/implement.md"
 expect "dangling delegate flagged" 1 "delegate: names 'nope'" -- "$chk" --root "$b" implement
 expect "unknown contract is usage error" 2 'unknown contract' -- "$chk" --root "$b" bogus
 
+# 6. orchestrate launcher, generic path (no hook), in a fixture repo
+l="$setup/skills/orchestrate/scripts/launch.sh"
+r="$tmp/launch/src"; mkdir -p "$r"; ( cd "$r" && git init -q -b main && git commit -q --allow-empty -m init )
+expect "launch: dry run plans a worktree" 0 'would create' env -C "$r" HOME="$tmp" "$l" p1 --dry-run --no-cmux --base-ref main
+expect "launch: creates worktree + env" 0 'worktree:  .*src-p1 \(created\)' env -C "$r" HOME="$tmp" "$l" p1 --no-cmux --base-ref main
+[ -f "$tmp/.local/state/orchestrate/src-p1.env" ] && grep -q 'ORCHESTRATE_PROJECT=p1' "$tmp/.local/state/orchestrate/src-p1.env" && pass "launch: env file written" || fail "launch: env file missing"
+expect "launch: reuses existing worktree" 0 'exists, reused' env -C "$r" HOME="$tmp" "$l" p1 --no-cmux --base-ref main
+# with a hook: profile names it, hook add prints the path, env lines land in the env file
+h="$tmp/launch/src2"; mkdir -p "$h/.claude/scripts"; ( cd "$h" && git init -q -b main && git commit -q --allow-empty -m init )
+printf '# o\n\n## Isolation\n\n- hook: `.claude/scripts/iso.sh` (test)\n- base_ref: `main` trailing prose\n' > "$h/.claude/orchestrate.md"
+printf '#!/usr/bin/env bash\nset -e\ncase "$1" in add) git worktree add -q -b "$2" "../hooked-$2" "$3" >/dev/null 2>&1; cd "../hooked-$2" && pwd -P;; env) echo PORT=4242;; up) echo up >&2;; esac\n' > "$h/.claude/scripts/iso.sh"; chmod +x "$h/.claude/scripts/iso.sh"
+expect "launch: hook path + base_ref parsed" 0 'base: main' env -C "$h" HOME="$tmp" "$l" p2 --dry-run --no-cmux
+expect "launch: hook add/env/up used" 0 'PORT=4242' env -C "$h" HOME="$tmp" "$l" p2 --no-cmux
+[ -d "$tmp/launch/hooked-orchestrate/p2" ] && pass "launch: hook created the worktree" || fail "launch: hook worktree missing"
+
 exit $rc

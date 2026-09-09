@@ -72,7 +72,7 @@ asks for `/project-profile`. Change a slot there first.
 | Slot | Contents | Default |
 |---|---|---|
 | `## Budgets` | per-implementer tool-call and wall-time caps, silence timeout | 40 calls / 45 min / 15 min silent |
-| `## Isolation` | worktree + state recipe that makes two implementers safe at once | none (serial only) |
+| `## Isolation` | worktree + state recipe; keys read by `launch.sh`: `hook:` (add/env/up protocol), `base_ref:`, `worktrees:`; named paths must exist | none (serial only) |
 | `## Concurrency` | max implementers in flight when Isolation is defined | 1 |
 | `## Drift check` | extra documents the drift checker reads besides PRD, issues, synthesis | none |
 

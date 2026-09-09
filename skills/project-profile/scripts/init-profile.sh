@@ -52,12 +52,13 @@ for c in "${contracts[@]}"; do
     cp "$ex" "$out"
     # Docs the example's profiles point at (seat rubrics, known-walls board): copy
     # what is missing so every path in the copied profile resolves. Never overwrites.
-    if [ -d "$setup/examples/$stack/.claude/docs" ]; then
-      ( cd "$setup/examples/$stack/.claude/docs" && find . -type f ) | while IFS= read -r rel; do
-        dst="$root/.claude/docs/${rel#./}"
-        [ -e "$dst" ] || { mkdir -p "$(dirname "$dst")"; cp "$setup/examples/$stack/.claude/docs/${rel#./}" "$dst"; }
+    for sub in docs scripts; do
+      [ -d "$setup/examples/$stack/.claude/$sub" ] || continue
+      ( cd "$setup/examples/$stack/.claude/$sub" && find . -type f ) | while IFS= read -r rel; do
+        dst="$root/.claude/$sub/${rel#./}"
+        [ -e "$dst" ] || { mkdir -p "$(dirname "$dst")"; cp -p "$setup/examples/$stack/.claude/$sub/${rel#./}" "$dst"; }
       done
-    fi
+    done
     printf '%s: from examples/%s (edit; TODO markers must go)\n' ".claude/$c.md" "$stack"
   else
     {

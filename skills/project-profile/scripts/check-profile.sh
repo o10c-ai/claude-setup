@@ -53,8 +53,8 @@ table_col() {
 }
 
 # Relative paths in cells/prose: backticked or bare tokens containing a slash or ending in .md/.sh
-# Patterns (<slug>, *, {a,b}) are documentation, not paths: skipped.
-paths_in() { grep -oE '`[^`]+`|[A-Za-z0-9_./-]+\.(md|sh|exs|ex|ts|js|py|json|yaml|yml)' | sed -E 's/^`|`$//g' | grep -E '^[A-Za-z0-9_.]' | grep -vE '^(https?:|tmp/|_build|deps/)|[<>*{}]' | grep -E '/|\.(md|sh)$' || true; }
+# Only tokens with a slash count as paths; patterns (<slug>, *, {a,b}) and git refs are skipped.
+paths_in() { grep -oE '`[^`]+`|[A-Za-z0-9_./-]+\.(md|sh|exs|ex|ts|js|py|json|yaml|yml)' | sed -E 's/^`|`$//g' | grep -E '^[A-Za-z0-9_.]' | grep -vE '^(https?:|tmp/|_build|deps/|origin/|upstream/|refs/|HEAD)|[<>*{}]' | grep -E '/' || true; }
 
 for c in "${contracts[@]}"; do
   f="$root/.claude/$c.md"

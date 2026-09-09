@@ -7,9 +7,15 @@
 
 ## Isolation
 
-Serial only until this section names a recipe. When parallel is wanted:
+One worktree per Linear Project, created by `launch.sh` through the hook below;
+implementers inside a project run serially until `## Concurrency` says otherwise.
 
-- one git worktree per issue under `../<repo>-<issue-id>/`, created from `base_ref`;
+- hook: `.claude/scripts/orchestrate-isolate.sh` — implements `add <branch> <base_ref>`
+  (create the worktree, last stdout line = its path), `env` (KEY=VALUE lines: `PORT`,
+  `MIX_TEST_PARTITION`, …), `up` (services + first build). Wrap the project's own
+  worktree tooling; do not duplicate it.
+- base_ref: `origin/main`
+- one git worktree per project (or per issue when parallel) under `../<repo>-<name>/`;
 - a port slot per worktree for the dev server (`PORT=4000 + slot`);
 - `MIX_TEST_PARTITION=<issue-id>` so each implementer's `mix test` owns its database;
 - `_build` is worktree-local: the first `mix` call recompiles, budget for it.
