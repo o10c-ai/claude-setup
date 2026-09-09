@@ -1,0 +1,23 @@
+# contract	slot	req	kind	description
+# kind: text | table:<Column> (cells in that column that look like paths must exist) | paths (backticked relative paths in the section must exist)
+# Source of truth for the profile interface (ADR 0006). docs/profiles.md describes it; check-profile.sh enforces it.
+implement	Read first	required	text	Documents to read before touching the area (READ FIRST rows, glossary, ADRs)
+implement	Branch rules	required	text	Branch naming, protected branches, base ref, tracer-bullet layer order
+implement	Feedback loops	required	text	Ordered commands (lint, test, typecheck) with their wrappers, run until green
+implement	Commit	required	text	The commit command and why (hooks, env wrappers); push policy
+implement	Review	required	text	Project triggers that upgrade a /review checkpoint to the full committee
+review	Guards	required	table:Guard	Table: concern -> deterministic guard command; green is the evidence, never re-reviewed
+review	Seats	required	table:Rubric	Table: star | seat | fires when the diff... | rubric path (one file per seat)
+review	Evidence pack	required	text	Commands whose raw output populates the pack before any seat spawns
+review	Isolation	optional	text	How a state-mutating seat isolates (test DB partition) and what not to use
+review	Full committee triggers	optional	text	Project-level conditions beyond the pipeline gates
+review	Report	required	text	Where the workpad and the evidence pack land
+grill-with-visuals	Surfaces	required	text	What counts as a visual decision in this project
+grill-with-visuals	Render	required	text	How to render one surface in isolation: gallery contract, registry, URL pattern, fan-out
+grill-with-visuals	Capture	required	text	Spec destination and the durable currency (HEEx, Mermaid, prose)
+grill-with-visuals	Cleanup	optional	text	Paths to sweep before the session ends
+grill-with-visuals	Known walls	optional	paths	Path to the capability backlog
+orchestrate	Budgets	optional	text	Per-implementer tool-call and wall-time caps, silence timeout (default 40 / 45 min / 15 min)
+orchestrate	Isolation	optional	text	Worktree + state recipe that makes two implementers safe at once (default: serial only)
+orchestrate	Concurrency	optional	text	Max implementers in flight when Isolation is defined (default 1)
+orchestrate	Drift check	optional	text	Extra documents the drift checker reads besides PRD, issues, synthesis

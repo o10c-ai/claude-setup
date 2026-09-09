@@ -31,6 +31,7 @@ CONTEXT.md              glossary
 | `autonomous-run` | own | drive one issue to its predicate; wraps `implement` → `review`; trail at `.audit/<id>.tsv` |
 | `implement` | **contract** | tracer bullet, red-green-refactor, the project's feedback loops, review, commit |
 | `review` | **contract** | committee of seats with independent adjudication; checkpoint per issue, full committee at gates |
+| `project-profile` | own | doctor + init for the profiles the contract skills read; `profiles/slots.tsv` is the interface (ADR 0006) |
 | `show-in-pane`, `cmux-browser` | own | cmux pane display and browser automation |
 | `linear-cli`, `delegate`, `invoke-opencode-acp` | own | tooling skills, off by default |
 | from `vendor/` | symlinked | `diagnose`, `prototype`, `tdd`, `triage`, `zoom-out`, `improve-codebase-architecture`, `write-a-skill`, `teach`, `handoff`, `show-me-your-work`, `figure-it-out`, … |
@@ -85,14 +86,18 @@ after changing them.
 
 ## Profiles
 
-Copy `examples/phoenix/.claude/*.md` into a project's `.claude/` and edit. If
-the project ignores `.claude/`, add `!.claude/*.md`. The profile format and the
-slots each contract expects are in `docs/profiles.md`.
+Run `/project-profile init` in the project (or
+`skills/project-profile/scripts/init-profile.sh`): it copies
+`examples/<stack>/.claude/*.md` or a skeleton, fixes `.gitignore`
+(`.claude/*` + `!.claude/*.md` + `!.claude/docs/`), and leaves `TODO:` markers.
+`/project-profile` (doctor) then reports what is still missing; the contract
+skills refuse to run on an `invalid` profile. The interface is
+`profiles/slots.tsv`, described in `docs/profiles.md`.
 
 ## Docs
 
 - `docs/pipeline.md` — grill → to-prd → to-issues → autonomous-run(implement → review)
-- `docs/profiles.md` — profile format, slots, the same-name hazard
+- `docs/profiles.md` — profile format, slots, the same-name hazard; `profiles/slots.tsv` is the interface
 - `docs/context-budget.md` — why the baseline stays small and which levers keep it so
 - `docs/set-aside.md` — pstack pieces not adopted, with revisit triggers
 - `docs/adr/` — decisions with evidence

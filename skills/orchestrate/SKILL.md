@@ -6,7 +6,10 @@ description: Run a whole Linear Project to its Definition of Done from a thin co
 # Orchestrate
 
 Contract skill. Stack-specific limits come from `.claude/orchestrate.md` (slots below);
-without a profile the defaults in this file apply. The **orchestrator** is this session.
+without a profile the defaults in this file apply. Phase 0 runs
+`~/.claude/skills/project-profile/scripts/check-profile.sh` for **all** contracts: every
+implementer will invoke `implement` and `review`, so an `invalid` profile stops the run
+here ("run `/project-profile`"), not after the first fragment. The **orchestrator** is this session.
 It never reads code, never edits files outside `.audit/`, and never implements. Its whole
 context is: the operational intent, the dependency graph, the synthesis, and the trail.
 

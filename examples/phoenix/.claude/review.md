@@ -23,17 +23,19 @@ Green = the evidence line for that concern; the committee does not re-review it.
 ## Seats
 
 One file per seat under `.claude/docs/review/seats/`. Each file: trigger, rubric,
-adjudication, evidence-line template. ★ = wave 1.
+adjudication, evidence-line template. ★ = wave 1. Every rubric path must exist
+(`check-profile.sh` fails otherwise); this example ships one seat.
 
 | ★ | Seat | Fires when the diff… | Rubric |
 |---|---|---|---|
-|   | Server-side authorization | adds or changes a mutating `handle_event`, plug, seed, or domain action | `.claude/docs/review/seats/server-side-authorization.md` |
-| ★ | Cross-PR contract surface | changes a public function's argument contract, adds a bare-arg public function, or renames a key threaded across modules | `.claude/docs/review/seats/cross-pr-contract-surface.md` |
-| ★ | Divergent write paths | adds or changes a write call site (form, wizard step, worker, seed, factory) on a domain action that already has another caller | `.claude/docs/review/seats/divergent-write-paths.md` |
-|   | Test-surface enumeration | adds any new behavioural surface | `.claude/docs/review/seats/test-surface-enumeration.md` |
-|   | Documentation surface | adds or removes a public symbol, Ash action, event, config flag, or mode | `.claude/docs/review/seats/documentation-surface.md` |
-|   | Wire-format boundaries | changes Oban args, PubSub messages, GenServer casts, or a DOM-reachable `handle_event` head | `.claude/docs/review/seats/wire-format-boundaries.md` |
-|   | Route descriptor sync | changes `router.ex` or route helper modules | `.claude/docs/review/seats/route-descriptor-sync.md` |
+| ★ | Server-side authorization | adds or changes a mutating `handle_event`, plug, seed, or domain action | `.claude/docs/review/seats/server-side-authorization.md` |
+
+Seats a Phoenix/Ash project typically adds next, each with its own rubric file:
+cross-PR contract surface (public function argument contracts, keys threaded across
+modules); divergent write paths (a second caller on a domain action); test-surface
+enumeration; documentation surface; wire-format boundaries (Oban args, PubSub, GenServer
+casts, DOM-reachable `handle_event` heads); route descriptor sync (`router.ex`). Add a row
+only once its rubric file exists.
 
 ## Evidence pack
 

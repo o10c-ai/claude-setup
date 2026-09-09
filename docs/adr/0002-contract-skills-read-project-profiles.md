@@ -37,6 +37,8 @@ name the example profile to copy).
   render recipes, gallery paths); only the contract's phases are fixed.
 
 - Profiles live under `.claude/`, so projects whose `.gitignore` excludes
-  `.claude/` must allow `.claude/*.md` explicitly; the README states the line.
+  `.claude/` must change that rule to `.claude/*` and add `!.claude/*.md` and
+  `!.claude/docs/` (git cannot re-include a file under an excluded directory;
+  corrected by ADR 0006, which also adds the profile doctor).
 - A contract skill must be usable with no profile at all, so the fallback path
   is part of each contract, not an afterthought.

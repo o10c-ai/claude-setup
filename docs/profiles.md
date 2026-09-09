@@ -25,6 +25,15 @@ Then one `## <Slot>` section per slot the contract defines. Unknown sections
 are ignored. A profile may be as rich as it needs to be and may point at
 project docs and scripts; only the contract's phases are fixed.
 
+## The interface is `profiles/slots.tsv`
+
+The tables below are a rendering of `profiles/slots.tsv` (contract, slot,
+required/optional, shape, description). The TSV is authoritative: the doctor
+`skills/project-profile/scripts/check-profile.sh` enforces it, and
+`init-profile.sh` generates skeletons from it (ADR 0006). Every contract skill
+runs the doctor as phase 0: `absent` → fallback, `invalid` → the skill stops and
+asks for `/project-profile`. Change a slot there first.
+
 ## Slots per contract
 
 ### `/implement`
@@ -79,13 +88,17 @@ through `delegate:`.
 
 ## `.gitignore`
 
-Many projects ignore `.claude/` wholesale. Profiles must be tracked, so add:
+Many projects ignore `.claude/` wholesale. Profiles and seat rubrics must be
+tracked, and git cannot re-include a file under an excluded directory, so the
+rule must be:
 
 ```
+.claude/*
 !.claude/*.md
+!.claude/docs/
 ```
 
-after the ignore rule (or `!.claude/implement.md` etc. individually).
+`init-profile.sh` makes this edit; the doctor flags a git-ignored profile.
 
 ## Cost
 

@@ -10,6 +10,16 @@ stack-specific (guards, seat catalogue, evidence commands, isolation, report pat
 from the project profile at `.claude/review.md`. Read that file first; it may begin with
 `delegate: <skill>` (invoke that project skill and stop) or `status: not applicable`.
 
+Before anything else, run the profile doctor for this contract:
+
+```
+~/.claude/skills/project-profile/scripts/check-profile.sh review
+```
+
+`absent` → use the fallback below. `invalid` → stop and say "run `/project-profile`";
+do not run on a broken profile. `ok`, `not-applicable`, `delegate:` → proceed as the
+profile's first line says.
+
 ## Why this shape
 
 A self-graded checklist lets the author close its own finding as "unreachable by

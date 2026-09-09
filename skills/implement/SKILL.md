@@ -11,6 +11,16 @@ in the claude-setup repo). Read the profile first. If its first line is
 `delegate: <skill>`, invoke that project skill and stop. If it is
 `status: not applicable` or the file is missing, use the fallback at the end.
 
+Before anything else, run the profile doctor for this contract:
+
+```
+~/.claude/skills/project-profile/scripts/check-profile.sh implement
+```
+
+`absent` → use the fallback below. `invalid` → stop and say "run `/project-profile`";
+do not run on a broken profile. `ok`, `not-applicable`, `delegate:` → proceed as the
+profile's first line says.
+
 ## 1. Understand
 
 Read the plan, PRD, or issue you were pointed at. Consult the profile's

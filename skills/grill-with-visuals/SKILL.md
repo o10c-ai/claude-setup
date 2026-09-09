@@ -11,7 +11,9 @@ from the **project profile** at `.claude/grill-with-visuals.md`. Vocabulary:
 
 ## 0. Resolve the profile, or fall back
 
-Read `.claude/grill-with-visuals.md` in the project root.
+Run `~/.claude/skills/project-profile/scripts/check-profile.sh grill-with-visuals`.
+`invalid` → stop and say "run `/project-profile`". Otherwise read
+`.claude/grill-with-visuals.md` in the project root.
 
 - **Missing**, or first non-blank line is `status: not applicable`, or after
   reading the plan you find **no consequential UI or structural decision**:
