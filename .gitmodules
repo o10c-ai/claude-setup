@@ -1,0 +1,9 @@
+[submodule "vendor/mattpocock-skills"]
+	path = vendor/mattpocock-skills
+	url = https://github.com/mattpocock/skills.git
+[submodule "vendor/pstack-claude"]
+	path = vendor/pstack-claude
+	url = https://github.com/michael-denyer/pstack-claude
+[submodule "vendor/cmux-skills"]
+	path = vendor/cmux-skills
+	url = https://github.com/manaflow-ai/cmux-skills
