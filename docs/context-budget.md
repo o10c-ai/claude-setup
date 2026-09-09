@@ -48,7 +48,22 @@ until a skill from it is exposed.
 
 ## Profiles cost nothing until invoked
 
-The contract skills (`/implement`, `/review`, `/grill-with-visuals`) are three
+The contract skills (`/implement`, `/review`, `/grill-with-visuals`, `/orchestrate`) are four
 listing lines. Their project profiles at `.claude/<skill>.md` are not skills:
 no listing line, no baseline cost, read only when the contract is invoked.
 This is the reason profiles were chosen over per-project skills (ADR 0002).
+
+## Proxies and Remote Control
+
+A compression proxy in front of the API (headroom, `ANTHROPIC_BASE_URL` →
+localhost) trims request size, but Claude Code's Remote Control refuses any
+base URL other than `api.anthropic.com`, and the settings `env` block overrides
+the shell environment, so the two cannot be toggled per launch. Pick one per
+machine; the rollback is removing the base-URL line and restarting.
+
+## Multi-issue runs
+
+`/orchestrate` (ADR 0005) bounds context per phase instead of per session: the
+conductor holds intent, synthesis, and trail; each implementer is a fresh
+subagent under a turn budget; the drift check reads documents only. The fourth
+contract skill adds one listing line.

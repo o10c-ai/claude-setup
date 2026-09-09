@@ -29,7 +29,7 @@ the PR body, and a regression seat that runs the issue's `live:` line at
   `review: auto`.
 - **Slicing time only**: seat set fixed in the issue body. Rejected because
   the implementing diff routinely touches surfaces the slicer did not name.
-- **Full committee after every issue**: rejected on cost; the the Phoenix project
+- **Full committee after every issue**: rejected on cost; the Phoenix project
   calibration was ~28 min wall and ~540k subagent tokens for four
   seats.
 

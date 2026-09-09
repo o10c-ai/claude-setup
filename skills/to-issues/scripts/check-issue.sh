@@ -44,12 +44,21 @@ if [ -z "$rev" ]; then
 else
   printf '%s' "$rev" | grep -qE '^auto( *\+ *[a-z0-9-]+( *, *[a-z0-9-]+)*)? *$' \
     || fail "review: must be 'auto' or 'auto + <seat>, <seat>' (kebab-case seat names; got: '$rev')"
-  if [ -f .claude/review.md ]; then
-    catalogue="$(awk '$0=="## Seats"{on=1;next} /^## /{on=0} on && /^\|/{print}' .claude/review.md \
-      | awk -F'|' 'NR>2{gsub(/[` ]/,"",$2); if ($2!="") print $2}')"
+  # Seat catalogue: the project's .claude/review.md (repo root, not cwd). The
+  # `Seat` column is found by header name and slugified (lowercase, non-alnum
+  # runs -> '-'), so Title-Case names and a leading star column both work.
+  root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+  profile="$root/.claude/review.md"
+  if [ -f "$profile" ]; then
+    catalogue="$(awk '$0=="## Seats"{on=1;next} /^## /{on=0} on && /^\|/{print}' "$profile" \
+      | awk -F'|' '
+          function slug(x){ x=tolower(x); gsub(/[`*]/,"",x); gsub(/[^a-z0-9]+/,"-",x); gsub(/^-+|-+$/,"",x); return x }
+          NR==1 { for (i=1;i<=NF;i++) if (slug($i)=="seat") col=i; next }
+          NR==2 { next }
+          col && $col !~ /^[ -]*$/ { print slug($col) }')"
     for seat in $(printf '%s' "$rev" | sed -E 's/^auto *\+? *//; s/,/ /g'); do
       printf '%s\n' "$catalogue" | grep -qx "$seat" \
-        || fail "review: names seat '$seat' not in .claude/review.md '## Seats' table"
+        || fail "review: names seat '$seat' not in $profile '## Seats' table (known: $(printf '%s' "$catalogue" | tr '\n' ' '))"
     done
   fi
 fi

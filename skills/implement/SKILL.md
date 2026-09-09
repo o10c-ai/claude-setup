@@ -13,8 +13,12 @@ in the claude-setup repo). Read the profile first. If its first line is
 
 ## 1. Understand
 
-Read the plan, PRD, or issue you were pointed at. Read every document listed
-under the profile's `## Read first`. Read the code you are about to change.
+Read the plan, PRD, or issue you were pointed at. Consult the profile's
+`## Read first` rows for the area you touch, **narrowly**: a document over a
+few hundred lines goes to an `Explore` subagent that returns the rules that
+apply, and you keep the rules, not the file. Read the code you are about to
+change, not the module around it. Your context is the budget for the whole
+unit; spend it on the tracer bullet and the red-green cycles.
 Restate the unit of work in one sentence: what changes, and the check that
 proves it. If the work came from `/to-issues`, that check is the issue's
 `## Predicate`.
@@ -55,6 +59,11 @@ contract seats. Run the **full committee** when the issue says
 `Review gate: interaction`, when it is the last slice of its Project, or when
 a trigger in the profile's `## Review` section fires. Fix every ❌ and have it
 re-adjudicated before committing.
+
+Under `autonomous-run`, the issue-end checkpoint (its step 6) **is** this
+review; do not run a second one per commit unless a profile `## Review`
+trigger fires on the unit itself. Standalone `/implement` (no issue) runs the
+checkpoint here, before its commit.
 
 ## 6. Commit
 

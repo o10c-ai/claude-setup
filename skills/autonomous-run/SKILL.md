@@ -129,5 +129,7 @@ the repo is not yours to commit to.
 When the run is a large migration or a multi-part change with no obvious
 sequence, design the playbook first via the **figure-it-out** skill, then run
 it under the Run mode above. figure-it-out references pstack skills that are
-not installed here (`architect`, `arena`, `poteto-mode` principles); treat
-those references as "design it yourself" steps.
+not installed here. Map them: `architect` → `grill-with-docs` (design it twice on
+one-way doors), `arena` → `prototype` (race the candidates, keep the SHA),
+`poteto-mode` principles → the Autonomy section of CLAUDE.md. Multi-issue work
+goes to `orchestrate`, not to a single run.

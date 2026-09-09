@@ -33,7 +33,7 @@ adjudication, evidence-line template. ★ = wave 1.
 |   | Test-surface enumeration | adds any new behavioural surface | `.claude/docs/review/seats/test-surface-enumeration.md` |
 |   | Documentation surface | adds or removes a public symbol, Ash action, event, config flag, or mode | `.claude/docs/review/seats/documentation-surface.md` |
 |   | Wire-format boundaries | changes Oban args, PubSub messages, GenServer casts, or a DOM-reachable `handle_event` head | `.claude/docs/review/seats/wire-format-boundaries.md` |
-|   | Route sync | changes `router.ex` or route helper modules | `.claude/docs/review/seats/route-sync.md` |
+|   | Route descriptor sync | changes `router.ex` or route helper modules | `.claude/docs/review/seats/route-descriptor-sync.md` |
 
 ## Evidence pack
 

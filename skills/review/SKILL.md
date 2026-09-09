@@ -121,5 +121,6 @@ gets a fresh verdict.
 ## Relationship to the pipeline
 
 `/to-issues` writes the `review:` line and the `Review gate`. `autonomous-run` calls
-`/implement` for the work and this skill at the end of the issue. `/implement` also calls
-this skill before its commit when the project profile says so.
+`/implement` for the work and this skill once, at the end of the issue. Standalone
+`/implement` (no issue) runs the checkpoint itself before its commit; under
+`autonomous-run` it does not, unless a profile `## Review` trigger fires on the unit.

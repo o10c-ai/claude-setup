@@ -14,7 +14,7 @@ output-styles/          ConciseEng
 hooks/                  rtk-rewrite, secret redaction, concise-nudge (PreToolUse / UserPromptSubmit)
 skills/                 own skills and overrides (see below)
 vendor/                 upstream skill libraries as submodules (mattpocock/skills, pstack-claude, cmux-skills)
-examples/phoenix/       example project profiles for the three contract skills
+examples/phoenix/       example project profiles for the four contract skills
 docs/                   pipeline, profiles, context budget, set-aside, adr/, specs/
 CONTEXT.md              glossary
 .audit/                 decision trail of the extraction

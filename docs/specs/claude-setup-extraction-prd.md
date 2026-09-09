@@ -45,7 +45,7 @@ All of the following on one head of each repo:
 - `cd /tmp && claude -p --model claude-sonnet-5 "Do not call tools. List skills named review, implement, grill-with-visuals with the first 8 words of each description."` names all three.
 - `gh repo view o10c-ai/claude-setup --json visibility,defaultBranchRef` returns `PUBLIC` and `main`; `git -C <checkout> log -p | grep -cE 'sk-ant-|ghp_|lin_api_|<internal-domain>|--team <team>'` returns 0.
 - `bash skills/to-issues/scripts/check-issue.sh` rejects a body without a `review:` line and accepts one with `review: auto`.
-- In the the Phoenix project worktree branch: `.claude/{implement,review,grill-with-visuals}.md` exist, `.claude/skills/{do-work,post-impl-review,grill-with-visuals}` do not, and `grep -c post-impl-review CLAUDE.md` is 0.
+- In the Phoenix project worktree branch: `.claude/{implement,review,grill-with-visuals}.md` exist, `.claude/skills/{do-work,post-impl-review,grill-with-visuals}` do not, and `grep -c post-impl-review CLAUDE.md` is 0.
 
 ## Data Shape
 
@@ -60,12 +60,12 @@ gate (ADR 0003).
 
 ## Implementation Decisions
 
-- History: `git filter-repo --subdirectory-filter home-manager/claude-code` on a fresh clone, with private paths removed across history (o10c-*, serena-*, sym-*, gitea-tea, sentry-cli, claude-config-management, claude-plugin-management, o10c-automation-dev, agents/, settings.json, ccstatusline.json). **One-way door**: public history cannot be un-published; a secrets and private-name scan gates the push.
+- History: `git filter-repo --subdirectory-filter home-manager/claude-code` on a fresh clone, with private paths removed across history (the private `<team>-*`, serena-*, sym-*, gitea-tea, sentry-cli, claude-config-management, claude-plugin-management, o10c-automation-dev, agents/, settings.json, ccstatusline.json). **One-way door**: public history cannot be un-published; a secrets and private-name scan gates the push.
 - Vendored format references (`CONTEXT-FORMAT.md`, `ADR-FORMAT.md`) are bundled into the `grill-with-docs` override, because the Skill tool reports the symlink path as base directory, so relative `vendor/` paths do not resolve from `~/.claude/skills/`.
 - The public `CLAUDE.md` carries the Shell, cmux, and Autonomy sections; the private nix `CLAUDE.md` keeps its declarative-config section and `@`-imports the public one.
 - `settings.example.json` is the private file minus the one internal-domain `WebFetch` allow entry.
 - Nix ADR 0001 (Bash allowlist) moves to the public repo as ADR 0001; grill ADRs renumber 0002-0004. Nix `CONTEXT.md` terms merge into the public glossary.
-- Contract skill for `/review` carries the two contract seats (audit, regression) and the dispatch protocol; the the Phoenix project seat files move to `.claude/docs/review/seats/` in the Phoenix project and the profile points there.
+- Contract skill for `/review` carries the two contract seats (audit, regression) and the dispatch protocol; the Phoenix project seat files move to `.claude/docs/review/seats/` in the Phoenix project and the profile points there.
 - `autonomous-run` Run step 3 becomes: run `/implement` for the unit, then `/review` at the end of the issue; full committee when `Review gate: interaction` or last slice.
 - the Phoenix project work happens in a new worktree on branch `feat/claude-setup-profiles`; the `main` worktree is on another feature branch with a dirty tree and is not touched.
 
