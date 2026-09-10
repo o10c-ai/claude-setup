@@ -11,7 +11,7 @@ nothing loads unless you link it.
 CLAUDE.md               global instructions (shell, cmux, autonomy) — import it from yours
 settings.example.json   the lean preset (deny list, allowlist, hooks); your real file stays private
 output-styles/          ConciseEng
-hooks/                  rtk-rewrite, secret redaction, concise-nudge (PreToolUse / UserPromptSubmit)
+hooks/                  rtk-rewrite, secret redaction, concise-nudge, ship-transcript (PreToolUse / UserPromptSubmit / SessionEnd)
 skills/                 own skills and overrides (see below)
 vendor/                 upstream skill libraries as submodules (mattpocock/skills, pstack-claude, cmux-skills)
 examples/phoenix/       example project profiles for the four contract skills
