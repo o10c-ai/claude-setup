@@ -1,6 +1,6 @@
 ---
 name: to-issues
-description: Break a PRD or plan into Linear issues where each issue is one runnable predicate, one PR, and one autonomous-run session. Vertical slices as child issues of a feature Project, ordered riskiest-unknown-first, optionally wired with blockedBy. Use when the user wants to convert a plan/PRD into implementation issues or break work into slices.
+description: Break a PRD or plan into Linear issues where each issue is one runnable predicate and one autonomous-run session, all landing on the Project's single long-lived branch behind one PR. Vertical slices as child issues of a feature Project, ordered riskiest-unknown-first, wired with blockedBy, terminated by an integration issue and a human QA sign-off issue. Use when the user wants to convert a plan/PRD into implementation issues or break work into slices.
 allowed-tools: Read, Write, Edit, Bash
 ---
 
@@ -11,9 +11,16 @@ coding-agent session each. This is an operator-side conception skill: run by a
 human in conversation, before any implementation session starts.
 
 > OWN override of the vendored mattpocock-skills `to-issues` (GitHub-flavored).
-> Rewritten 2026-09-09 around pstack's decomposition rules: **one issue is one
-> predicate, one PR, one `autonomous-run`.** The earlier Symphony-dispatch
-> variant (WORKFLOWS file, integration issue, QA issue, dispatch label) is gone.
+> Decomposition rules come from pstack (2026-09-09): **one issue is one predicate
+> and one `autonomous-run` session.**
+>
+> **One issue is NOT one PR.** `f34d3c7` (2026-09-09) swapped the branch model to
+> branch-per-slice as collateral in a larger refactor; `to-issues` said so for
+> eight days and it cost a real project (O10C-343/344 built as an unpushed stack,
+> neither slice landing). Restored 2026-09-17: **one Linear Project = one branch =
+> one PR**, terminated by an integration issue and a human QA issue. The Symphony
+> dispatch machinery (WORKFLOWS file, `ready-for-agent` label) stays gone —
+> `orchestrate` dispatches now.
 
 ## Dependencies
 
@@ -29,13 +36,37 @@ human in conversation, before any implementation session starts.
 ## The model
 
 A PRD = a Linear **Project** carrying the PRD as a **Project Document** (never an
-issue). Each **slice** is a child Issue. Each slice is worked in its own branch
-off `base_ref`, opens its own PR, and its session commits a decision trail at
-`.audit/<issue-id>.tsv` on that branch. There is no integration issue; the last
-slice's predicate is the PRD's Definition of Done.
+issue). **The Project owns one long-lived branch, and that branch produces exactly
+one PR.** Each **slice** is a child Issue whose session lands its work on that same
+branch — it does not cut its own branch and does not open a PR. A terminal
+**integration issue** (agent-runnable), `blockedBy` every slice, syncs `base_ref`
+into the branch, runs full-feature validation, and opens the single
+**branch → `target_ref`** PR. A terminal **QA issue** (human-only), `blockedBy` the
+integration issue, is the true end of the DAG: it carries a human-runnable QA
+script and gates the merge.
+
+Why one PR: a slice is a tracer bullet, not a shippable increment. Slices share
+schema, fixtures and seams, so reviewing them separately reviews half-built states,
+and a stalled slice strands every slice stacked behind it. The review unit is the
+feature; the session unit is the slice.
+
+Each slice session commits its decision trail at `.audit/<issue-id>.tsv` on the
+Project branch.
+
+### Refs — confirm all three at the start
+
+| Param | Meaning | Default |
+|---|---|---|
+| `base_ref` | what the branch is cut from, and the ref it syncs against | `main` |
+| `target_ref` | what the integration issue's PR targets | `= base_ref` |
+| `branch` | the Project's branch | derived `feat/<slug>`; an override names an **existing** branch (checked out, never created) |
+
+`base_ref` is re-read from the Project for every slice. A session never inherits it
+from whatever branch happens to be checked out — that is how a Project ends up
+based on `staging` when it meant `main`.
 
 Linear placement: team `<team>`. Initiative inferred from the target repo; confirm
-if ambiguous. Confirm `base_ref` (default `main`) at the start.
+if ambiguous.
 
 ## Process
 
@@ -43,19 +74,25 @@ if ambiguous. Confirm `base_ref` (default `main`) at the start.
 
 Work from the PRD in conversation context. If passed a Project or issue
 reference, fetch it via `linear-cli` and read it fully. Establish the target
-repo, Initiative, feature name, and `base_ref`.
+repo, Initiative, feature name, and the three refs (`base_ref`, `target_ref`,
+`branch`).
 
 ### 2. Explore the codebase
 
 Use the repo's `CONTEXT.md` glossary and respect ADRs in the area touched.
 Issue titles and bodies use project vocabulary.
 
-### 3. Bootstrap the Project (if missing)
+### 3. Bootstrap the Project and its branch (if missing)
 
 `linear project list --team <team>`. If absent, propose:
 `linear project create -n "<name>" -t <team> --initiative "<initiative>" --json`,
 then attach the PRD:
 `linear document create -t "<name> — PRD" --content-file <prd.md> --project <slug>`.
+
+Then settle `branch`. Derived (`feat/<slug>`) means the first slice's session cuts
+it from `base_ref`; an override means the branch already exists and is used as-is.
+Record `branch`, `base_ref` and `target_ref` in the PRD document's header so every
+later session reads them from one place instead of inferring them from a checkout.
 
 ### 4. Draft slices
 
@@ -86,9 +123,10 @@ predicate needs more than one, or when ANY smart-zone trigger trips:
   mutable state is split into separate slices rather than serialized.
 
 **Review gate.** A slice that implements a one-way-door decision from the PRD,
-or that changes a user-facing interaction, gets `Review gate: interaction`. Its
-PR waits for the operator to review screenshots before merge. Every other slice
-is `Review gate: none` and runs fully autonomously.
+or that changes a user-facing interaction, gets `Review gate: interaction`: its
+session stops and shows the operator screenshots before moving on. Every other
+slice is `Review gate: none` and runs fully autonomously. The gate pauses the
+*slice*, not a PR — there is no PR until the integration issue.
 
 **Named review seats.** Every slice ends with a `/review` checkpoint: the seats
 whose triggers fire on the diff (`review: auto`) plus the two contract seats.
@@ -136,17 +174,46 @@ the dependent):
 linear issue relation add <slice-id> blocked-by <blocker-id>
 ```
 
+Then **always append the integration issue**, `blockedBy` **every** slice:
+
+```
+linear issue create --team <team> --project "<project-slug>" \
+  --title "Intégrer & promouvoir <feature>" \
+  --description-file <integration-body.md> --state Todo
+# then, for every slice:
+linear issue relation add <integration-id> blocked-by <slice-id>
+```
+
+Its body spells out its duties: sync `base_ref` into `branch`, run full-feature
+validation on the merged head, flip or verify any feature flag, run the `/review`
+full committee, open the single **`branch` → `target_ref`** PR, and move the
+Project to Human Review. Its predicate is the PRD's Definition of Done.
+
+Then **always append the QA issue**, `blockedBy` the integration issue, as the true
+end of the DAG. It is human-only — never dispatched, never given to an agent:
+
+```
+linear issue create --team <team> --project "<project-slug>" \
+  --title "QA & validation <feature>" \
+  --description-file <qa-body.md> --state Todo
+linear issue relation add <qa-id> blocked-by <integration-id>
+```
+
+The QA issue is the merge gate: the operator runs its script against the open PR
+and, on pass, merges and moves the Project to `Done`; on fail, files a rework issue
+blocking it.
+
 Do not modify the PRD document. Issues go to `Todo`.
 
 ### 7. Hand off
 
-Reply with the Project link and the issue ids in order. Each issue is picked up
-in its own session with `autonomous-run <issue-id>`, which reads the Predicate as
-its exit condition, runs `/implement` for the unit, ends the issue with a
-`/review` checkpoint (named + diff-fired + contract seats), and commits
-`.audit/<issue-id>.tsv` on the slice branch. Issues marked `Review gate:
-interaction` and the last slice of the Project get the full committee on the
-merge-ready head instead of a checkpoint.
+Reply with the Project link, the `branch` / `base_ref` / `target_ref` triple, and
+the issue ids in order. Each slice issue is picked up in its own session with
+`autonomous-run <issue-id>`, which reads the Predicate as its exit condition, runs
+`/implement` for the unit, ends with a `/review` checkpoint (named + diff-fired +
+contract seats), and commits `.audit/<issue-id>.tsv`. **Every slice works on the
+Project's branch and none of them pushes a PR.** The integration issue is the only
+one that opens a PR, and the QA issue is the only one a human runs.
 
 ## Slice issue body template
 

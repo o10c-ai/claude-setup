@@ -27,7 +27,7 @@ flowchart LR
 | `grill-with-docs` | a plan, the repo's `CONTEXT.md` and `docs/adr/` | resolved terms in `CONTEXT.md`, ADRs for one-way doors, prototype SHAs | no |
 | `grill-with-visuals` | same, plus a plan with UI or structural decisions | the above plus a design spec of HEEx/Mermaid fragments | yes; falls back to `grill-with-docs` |
 | `to-prd` | the grilled conversation | a local PRD with Definition of Done predicate, Data Shape, Verification Harness, Throughput Checkpoint | no |
-| `to-issues` | the PRD | Linear Project + child issues; each issue = one runnable Predicate = one PR = one session; bodies linted by `scripts/check-issue.sh` | no |
+| `to-issues` | the PRD | Linear Project + child issues; each issue = one runnable Predicate = one session; **one Project = one branch = one PR**, terminated by an integration issue and a human QA issue; bodies linted by `scripts/check-issue.sh` | no |
 | `orchestrate <project>` | a Linear Project (PRD + issues) | one implementer per issue, `.audit/<project>/synthesis.md`, drift verdicts, the Project at its Definition of Done | yes (`## Budgets`, `## Isolation`, `## Concurrency`, `## Drift check`) |
 | `autonomous-run <issue>` | one issue (directly, or as an implementer spawned by `orchestrate`) | a branch, a PR, `.audit/<issue-id>.tsv`, a fragment | wraps two contracts |
 | `implement` | the issue, the profile's feedback loops | a committed, gate-passing change | yes |

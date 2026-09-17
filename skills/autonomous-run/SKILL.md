@@ -22,7 +22,11 @@ Three modes. Pick the one the request names.
    verbatim as the exit condition, its `## Verify` lines as the per-iteration
    checks, its `## Prototype` SHA as the starting point, and its `## Review
    gate` as the only allowed pause (screenshots to the operator before merge).
-   Branch off the issue's `base_ref`, one PR per issue, trail at
+   Work on the **Project's** branch — one Linear Project = one branch = one PR.
+   Read `branch` / `base_ref` from the Project (or its PRD header), never from
+   whatever is checked out; cut `branch` from `base_ref` only if it does not
+   exist yet. Do **not** cut a per-issue branch and do **not** open a PR: the
+   Project's integration issue is the only thing that opens one. Trail at
    `.audit/<issue-id>.tsv`.
    **Opening phase, every time** (first run or a restart after preemption by
    `orchestrate`): `git status` and `git log/diff base_ref..HEAD`. Judge what is

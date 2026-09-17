@@ -53,7 +53,8 @@ self-contained and contains **only**:
 
 - the issue body verbatim (Predicate, Verify, Review gate, Depends on, Prototype);
 - the PRD's Definition of Done and Data Shape sections;
-- the branch name and `base_ref`; the instruction to work in the current worktree;
+- the Project's branch name and `base_ref` (one Project = one branch = one PR — the
+  implementer commits there and opens no PR); the instruction to work in the current worktree;
 - the turn budget and the checkpoint discipline;
 - the instruction: "Run the `autonomous-run` skill, Run mode, for this issue. Return a
   **fragment** in the shape below and nothing else."
@@ -136,8 +137,9 @@ surface it, with both fragments and the drift findings, rather than a third spaw
 
 ## 5. Finish
 
-The run ends when every issue is `Done` and the last slice's `/review` full committee is
-clean on its head. Final trail row: the Definition of Done predicate and its evidence.
+The run ends when every slice is `Done`, the integration issue has opened the single
+`branch` → `target_ref` PR with the `/review` full committee clean on its head, and the
+human-only QA issue is surfaced to the operator as the merge gate. Final trail row: the Definition of Done predicate and its evidence.
 `cmux clear-progress`, `cmux notify`. Reply with: issues run, restarts and why, drift
 findings and how they were routed, open product questions, synthesis path.
 
