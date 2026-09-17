@@ -2,13 +2,17 @@
 # Launch one orchestrator session for one Linear Project in its own worktree.
 #
 # Usage: launch.sh <project-slug> [--name <dir/branch name>] [--branch <name>]
-#                  [--base-ref <ref>] [--no-up] [--no-cmux] [--dry-run]
+#                  [--base-ref <ref>] [--title <words>] [--no-up] [--no-cmux] [--dry-run]
 #
 # Stack-agnostic. The project supplies an isolation hook through its
 # .claude/orchestrate.md `## Isolation` slot:
 #   hook: <path>          script implementing the protocol below (optional)
 #   base_ref: <ref>       default origin/main
 #   worktrees: <dir>      parent dir for generic worktrees, default ../ (ignored when hook set)
+#   workspace_prefix: <s> short project tag for the cmux workspace title, default the repo name
+#
+# The cmux workspace is titled "<prefix> · <title>": --title, else the first three words of the
+# Linear Project's name (punctuation dropped), else the --name.
 #
 # Hook protocol (cwd = the project checkout launch.sh was run from):
 #   <hook> add <branch> <base_ref>   create the worktree; LAST stdout line = its absolute path
@@ -21,12 +25,13 @@
 # resource attributes tagged with linear.project=<slug>) or prints the command.
 set -euo pipefail
 
-slug=""; name=""; branch=""; base_ref=""; do_up=1; use_cmux=1; dry=0
+slug=""; name=""; branch=""; base_ref=""; title=""; do_up=1; use_cmux=1; dry=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --name) name="${2:?}"; shift 2 ;;
     --branch) branch="${2:?}"; shift 2 ;;
     --base-ref) base_ref="${2:?}"; shift 2 ;;
+    --title) title="${2:?}"; shift 2 ;;
     --no-up) do_up=0; shift ;;
     --no-cmux) use_cmux=0; shift ;;
     --dry-run) dry=1; shift ;;
@@ -50,19 +55,32 @@ profile=".claude/orchestrate.md"
 key() { [ -f "$profile" ] && awk -v h="## Isolation" '$0==h{on=1;next} /^## /{on=0} on' "$profile" | sed -nE "s/^[-* ]*$1:[[:space:]]*(\`([^\`]+)\`|([^[:space:]]+)).*$/\2\3/p" | head -1 || true; }
 hook="$(key hook)"; [ -z "$base_ref" ] && base_ref="$(key base_ref)"; base_ref="${base_ref:-origin/main}"
 wt_parent="$(key worktrees)"; wt_parent="${wt_parent:-..}"
+prefix="$(key workspace_prefix)"; prefix="${prefix:-$repo}"
 case "$hook" in ""|/*) ;; *) hook="$root/$hook" ;; esac   # absolute: it is invoked from inside the worktree too
 [ -n "$hook" ] && [ ! -x "$hook" ] && { printf 'isolation hook %s is not executable\n' "$hook" >&2; exit 2; }
 
 # Linear project exists? fail-open (CLI or network may be absent).
+project_name=""
 if command -v linear >/dev/null 2>&1; then
-  linear project view "$slug" >/dev/null 2>&1 || printf 'warning: `linear project view %s` failed; check the slug\n' "$slug" >&2
+  # First line of the view is "# <name>"; the CLI has no plain-name flag. Never fatal: the
+  # CLI or the network may be absent, and stdin is closed so no pager can hang the run.
+  project_name="$( { linear project view "$slug" </dev/null 2>/dev/null || true; } | LC_ALL=C sed -n '1s/^# *//p' | LC_ALL=C sed $'s/\x1b\\[[0-9;]*m//g' || true)"
+  [ -n "$project_name" ] || printf 'warning: `linear project view %s` failed; check the slug\n' "$slug" >&2
 fi
+# Workspace title: --title, else the first three words of the Project name, else the name.
+if [ -z "$title" ]; then
+  # Keep letters/digits/hyphens (any script), drop punctuation and dashes-as-words, take 3 words.
+  title="$(printf '%s' "$project_name" | perl -CSD -pe 's/[^\p{L}\p{N}\s-]/ /g; s/(?<!\S)-+(?!\S)/ /g' | awk '{ n=(NF<3?NF:3); for (i=1;i<=n;i++) printf "%s%s", $i, (i<n?" ":"") }')"
+  title="${title:-$name}"
+fi
+ws_title="$prefix · $title"
 
 state="${XDG_STATE_HOME:-$HOME/.local/state}/orchestrate"; mkdir -p "$state"
 envfile="$state/$repo-$name.env"
 
 say() { printf '%s\n' "$*"; }
-say "project:   $slug"
+say "project:   $slug${project_name:+ — $project_name}"
+say "workspace: $ws_title"
 say "repo:      $repo   branch: $branch   base: $base_ref"
 say "hook:      ${hook:-<none: generic git worktree>}"
 
@@ -110,8 +128,8 @@ say "command:   $cmd"
 
 cmux="${CMUX_BIN:-/Applications/cmux.app/Contents/Resources/bin/cmux}"
 if [ "$use_cmux" -eq 1 ] && [ -x "$cmux" ] && "$cmux" ping >/dev/null 2>&1; then
-  "$cmux" new-workspace --name "orch: $name" --cwd "$wt" --command "$cmd" --focus false >/dev/null
-  say "cmux:      workspace 'orch: $name' opened (not focused)"
+  "$cmux" new-workspace --name "$ws_title" --cwd "$wt" --command "$cmd" --focus false >/dev/null
+  say "cmux:      workspace '$ws_title' opened (not focused)"
 else
   command -v pbcopy >/dev/null 2>&1 && printf '%s' "$cmd" | pbcopy && say "cmux:      unavailable; command copied to clipboard" || say "cmux:      unavailable; run the command above"
 fi

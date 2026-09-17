@@ -21,15 +21,16 @@ check, preemption, turn budget.
 Parallel work across projects is N orchestrator sessions, each in its own worktree:
 
 ```
-~/.claude/skills/orchestrate/scripts/launch.sh <project-slug> [--name <dir>] [--no-up] [--dry-run]
+~/.claude/skills/orchestrate/scripts/launch.sh <project-slug> [--name <dir>] [--title <words>] [--no-up] [--dry-run]
 ```
 
 Run it from any checkout of the project. It reads the profile's `## Isolation` keys
-(`hook:`, `base_ref:`, `worktrees:`), creates the worktree through the project's hook
+(`hook:`, `base_ref:`, `worktrees:`, `workspace_prefix:`), creates the worktree through the project's hook
 (or plain `git worktree add`), captures the hook's env (ports, partitions), runs the
 hook's `up` (services, first build), and opens a cmux workspace running `claude` with
 `/orchestrate <slug>` as the first prompt and `linear.project=<slug>` on the telemetry
-resource. Hook protocol is in the script header; `examples/phoenix/.claude/orchestrate.md`
+resource. The workspace is titled `<workspace_prefix> · <title>`: `--title`, else the first
+three words of the Linear Project's name. Hook protocol is in the script header; `examples/phoenix/.claude/orchestrate.md`
 shows a profile that names one. Within a project, implementers stay serial until
 `## Concurrency` and an `## Isolation` recipe say otherwise.
 

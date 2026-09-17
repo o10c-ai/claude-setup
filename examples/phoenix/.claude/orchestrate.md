@@ -15,6 +15,7 @@ implementers inside a project run serially until `## Concurrency` says otherwise
   `MIX_TEST_PARTITION`, …), `up` (services + first build). Wrap the project's own
   worktree tooling; do not duplicate it.
 - base_ref: `origin/main`
+- workspace_prefix: `APP` — the cmux workspace is titled `APP · <first three words of the Project name>`
 - one git worktree per project (or per issue when parallel) under `../<repo>-<name>/`;
 - a port slot per worktree for the dev server (`PORT=4000 + slot`);
 - `MIX_TEST_PARTITION=<issue-id>` so each implementer's `mix test` owns its database;
