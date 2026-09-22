@@ -140,6 +140,23 @@ a checkpoint that runs the whole catalogue is a full committee by another name.
 **Prototype evidence.** A decision settled by a prototype carries its branch or
 SHA in the body. The implementing session starts from that, not from prose.
 
+**Language — English prose, domain terms untranslated.** Issue titles and bodies
+are written in **English**, whatever language the codebase, the PRD conversation
+or the surrounding artefacts are in. The one exception is the **ubiquitous
+language**: a domain term keeps the exact form the project uses, and that form is
+authoritative — the project's `CONTEXT.md` glossary, the resource and action
+names, the status atoms, the Gettext msgids, the UI labels an operator reads on
+screen. Translating one of those invents a second name for a thing that already
+has one, and the issue stops matching the code a session will grep.
+
+So: *"the reprise flip refuses while an unresolved attempt exists"*, not *"the
+takeover flip"*. Quote a UI label verbatim and in quotes — « Déjà facturée », not
+"already billed". Same for a status (`:no_mandate`), an operator's own words, and
+any string the implementation must match character for character.
+
+If a term is genuinely ambiguous in the source language, name it once in the
+project's form and gloss it in English in parentheses — do not replace it.
+
 ### 5. Operator review of the slice list
 
 Present a numbered list. For each slice: **Title**, **Predicate** (one line),
