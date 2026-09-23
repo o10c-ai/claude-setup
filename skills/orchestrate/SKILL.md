@@ -56,7 +56,9 @@ self-contained and contains **only**:
 - the PRD's Definition of Done and Data Shape sections;
 - the Project's branch name and `base_ref` (one Project = one branch = one PR — the
   implementer commits there and opens no PR); the instruction to work in the current worktree;
-- the turn budget and the checkpoint discipline;
+- the turn budget and the checkpoint discipline, and "commit through the hooks; never
+  `--no-verify`" (a brief that said otherwise let lint debt pile up silently);
+- the triage classes (below), and "fix F items in-slice; do not return them as questions";
 - the instruction: "Run the `autonomous-run` skill, Run mode, for this issue. Return a
   **fragment** in the shape below and nothing else."
 
@@ -87,12 +89,23 @@ landed: <2-5 lines, behaviour not files>
 decisions: <one line each, with trail row ts>
 deviations: <anything done differently from the issue body, or "none">
 facts: <new facts about the codebase worth carrying forward, or "none">
-open: <questions needing a product call, or "none">
+findings: <one per line: B|D|P · <finding> · rec: <default>; or "none">
 ```
 
-`blocked` with an `open:` question is the implementer's only way to ask; it cannot ask
-mid-flight. Answer by re-briefing (spawn a fresh implementer with the answer appended) or,
-for a product call, pause the run and surface it to the operator.
+**Triage classes** (ADR 0008). Every finding — an implementer's, a drift check's, a
+review seat's non-blocking note — carries exactly one, set by whoever raises it:
+
+| Class | Means | Route |
+|---|---|---|
+| **B** | merging would ship a defect, a security hole, or miss the DoD | fixed before Finish |
+| **F** | the recommendation is the obvious, reversible default | done, never asked (in-slice, or the one leftovers run) |
+| **D** | real, not this PR's job | one backlog issue for the whole run |
+| **P** | product call, no obvious default | operator, with a recommendation that ships unless overridden |
+
+An implementer fixes its own F items, so its fragment carries B, D, and P only.
+`predicate: blocked` with a B or P finding is the implementer's only way to ask; it
+cannot ask mid-flight. A B is answered by re-briefing. A P that blocks the predicate is
+paused on; a P that does not is recorded with its recommendation and the run goes on.
 
 ## 3. Update the synthesis, then run the drift check
 
@@ -104,20 +117,23 @@ Rewrite `synthesis.md` from the fragment (do not append; the file is the current
 ## Issues                          <table: id | state | head | predicate | review>
 ## Decisions                       <accumulated, one line each>
 ## Deviations                      <accumulated, with the issue that introduced each>
-## Open                            <unanswered product questions>
+## Routed extras                   <small fixes folded into a later slice: what, from which issue, into which>
+## Findings                        <by class: B (must be empty at Finish) · F (pending leftovers) · D · P with rec>
 ```
 
 Then spawn the **drift check**: a fresh `general-purpose` subagent whose brief is the
 PRD document, the issue list with bodies, and `synthesis.md`. Nothing else, and it is
-read-only. It answers:
+read-only. It judges the **Routed extras** section as scope, not as drift, and does not
+re-raise a finding already listed under **Findings**. It answers:
 
 ```
 execution drift: <issue-id>: <what the synthesis says was built that the issue did not ask for, or what the issue asked for that is missing> | none
 intent drift: <where the issues, as built so far, no longer add up to the PRD's Definition of Done or Data Shape> | none
-severity: low | high   (per finding)
+class: B | F | D | P   (per finding, ADR 0008)
 ```
 
-Route the result: **execution drift** on an in-flight or just-finished issue → preempt or
+Route the result by class first: F and D findings go straight to **Findings** with no
+pause and no re-brief unless the issue is still in flight. Then: **execution drift** on an in-flight or just-finished issue → preempt or
 re-brief that implementer with the finding (autonomous). **Intent drift** → pause the run,
 write the finding to the trail, surface it to the operator; it is a product call. A
 finding of `none` is the common case and gets one trail row.
@@ -138,11 +154,22 @@ surface it, with both fragments and the drift findings, rather than a third spaw
 
 ## 5. Finish
 
-The run ends when every slice is `Done`, the integration issue has opened the single
-`branch` → `target_ref` PR with the `/review` full committee clean on its head, and the
-human-only QA issue is surfaced to the operator as the merge gate. Final trail row: the Definition of Done predicate and its evidence.
-`cmux clear-progress`, `cmux notify`. Reply with: issues run, restarts and why, drift
-findings and how they were routed, open product questions, synthesis path.
+The exit predicate is **ship**: every slice `Done`, no B finding open, the integration
+issue has opened the single `branch` → `target_ref` PR with the `/review` full committee
+clean on its head, and the human-only QA issue is surfaced to the operator as the merge
+gate. Before that, in this order:
+
+1. **F leftovers**: every pending F finding goes to ONE implementer run (one brief, one
+   commit series), not to a new wave.
+2. **D**: one backlog issue (outside the Project) listing every D finding with its
+   source; link it from the PR body. No follow-up wave is opened for it.
+3. **P**: at most 3 reach the operator, each with its recommendation, stated as
+   "shipping <rec> unless you say otherwise". A fourth means one is really F or D:
+   reclassify. Record each P's recommendation in the trail as the shipped default.
+
+A run never ends by asking "what next?"; unanswered P items are already decided. Final trail row: the Definition of Done predicate and its evidence.
+`cmux clear-progress`, `cmux notify`. Reply with: issues run, restarts and why, findings by
+class and where each went (leftovers commits, the D issue, the ≤3 P defaults), synthesis path.
 
 ## Profile slots (`.claude/orchestrate.md`)
 

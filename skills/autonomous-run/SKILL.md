@@ -69,9 +69,11 @@ Three modes. Pick the one the request names.
 **Reply:** the exit condition, iterations run, what landed, what was discarded,
 final predicate state, trail path, and the Attention section from the trail
 review. **When spawned by `orchestrate`**, reply with the fragment shape from
-that skill instead, and nothing else. You cannot ask mid-flight: a question
-that needs a product call ends the run with `predicate: blocked` and the
-question under `open:`.
+that skill instead, and nothing else. Every finding carries a triage class
+(ADR 0008): fix the F ones yourself; report B, D, and P under `findings:` with
+your recommendation. You cannot ask mid-flight: only a B you cannot fix or a P
+that blocks the predicate ends the run with `predicate: blocked`. A D or a
+non-blocking P never stops you.
 
 **Turn budget.** When the brief names one, respect it: commit wip at every green
 cycle so a hard stop loses at most one cycle, and write a trail row at least

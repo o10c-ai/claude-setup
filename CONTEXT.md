@@ -76,7 +76,7 @@ _Avoid_: worker, owner, coder
 
 **Fragment**:
 The implementer's fixed-shape report: head SHA, predicate state, review
-verdict, what landed, decisions, deviations, facts, open questions. Never a
+verdict, what landed, decisions, deviations, facts, classed findings. Never a
 diff or a log.
 _Avoid_: report, summary, handoff
 
@@ -91,6 +91,13 @@ synthesis against the operational intent. Reports execution drift (an issue
 built something other than asked) or intent drift (the issues no longer add
 up to the PRD).
 _Avoid_: audit, QA, sanity check
+
+**Triage class**:
+The one letter every finding carries, set by whoever raises it (ADR 0008):
+B blocks the merge, F is fixed without asking, D goes to one backlog issue,
+P is a product call whose recommendation ships unless the operator overrides.
+Only B and P reach the operator.
+_Avoid_: severity, priority, open question
 
 **Turn budget**:
 The tool-call and wall-time cap an implementer runs under, measured by the

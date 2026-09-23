@@ -123,6 +123,12 @@ is rejected as incomplete.
 ### …
 ```
 
+A seat's non-blocking note (a ⚠️) carries a triage class (ADR 0008): **F** if the fix
+is the obvious reversible default — the running session applies it before the verdict
+binds — or **D** if it is not this change's job, listed once for the backlog. A note
+without a class is returned to the seat. A note that would ship a defect is a `❌`, not
+a ⚠️.
+
 Fix `❌` items immediately — do not ask, fix and report. A `❌` turned `✅` must show the
 *independent* re-adjudication (a fresh seat run on the new head), never an author
 "unreachable by construction". Findings from a gate run go back to the owner; a new head
