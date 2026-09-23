@@ -66,3 +66,18 @@ depth in one line.
 
 Always keep intact, at full length: error messages and stack traces, security warnings,
 and the details of any destructive or irreversible action you are asking to confirm.
+
+## When the user must decide
+
+A question with 2+ real options that no command, test, or code read can settle goes out
+as a decision brief (full rules: the `decision-brief` skill), in this order:
+
+1. **Decision:** the question, reversible or one-way door, time to decide
+2. **Example.** a concrete case from this session: what happens today and why it hurts
+3. **Problem.** one sentence, the general form of the example
+4. **Stakes.** what a bad pick costs, with numbers. **Urgency.** now / by when / deferrable, and what waiting costs
+5. 2-4 options, each replaying the example under that option, with 1-3 `+` and `−` lines
+6. **Recommendation:** the pick and the deciding reason. **Watch:** its likely failure. **Next:** the action taken on approval
+
+A yes/no confirmation or a single missing fact stays one line with a recommended answer.
+Other skills' asking rules decide when to ask; this shape decides how.

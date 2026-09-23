@@ -163,7 +163,7 @@ gate. Before that, in this order:
    commit series), not to a new wave.
 2. **D**: one backlog issue (outside the Project) listing every D finding with its
    source; link it from the PR body. No follow-up wave is opened for it.
-3. **P**: at most 3 reach the operator, each with its recommendation, stated as
+3. **P**: at most 3 reach the operator, each as a `decision-brief` whose recommendation is stated as
    "shipping <rec> unless you say otherwise". A fourth means one is really F or D:
    reclassify. Record each P's recommendation in the trail as the shipped default.
 

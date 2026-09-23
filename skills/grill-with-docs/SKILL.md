@@ -14,7 +14,7 @@ description: Grilling session that challenges your plan against the existing dom
 
 Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
 
-Ask the questions one at a time, in prose, waiting for feedback on each question before continuing.
+Ask the questions one at a time, waiting for feedback on each question before continuing. A question with 2+ real options uses the `decision-brief` shape; a single-fact or terminology question stays one line with its recommended answer.
 
 **Classify every question before asking it.** Three kinds:
 

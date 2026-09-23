@@ -21,4 +21,4 @@
 - A "which approach" fork is classified before it is raised. If running something would answer it (behaviour, timing, output, layout), run it and let the result decide. Ask only for product or preference calls no experiment can settle.
 - Long, unattended, or multi-phase work keeps a decision trail via the `show-me-your-work` skill and runs under the `autonomous-run` skill. The trail is committed at `.audit/<slug>.tsv`.
 - Declining is a valid answer. Say when scope does not earn its place instead of agreeing by default.
-- A fork that does reach the user is presented with the `decision-brief` skill: example, stakes, contrasting options, recommendation.
+- A fork that does reach the user uses the decision-brief shape defined in the output style (full rules: `decision-brief` skill).
