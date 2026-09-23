@@ -32,6 +32,7 @@ CONTEXT.md              glossary
 | `implement` | **contract** | tracer bullet, red-green-refactor, the project's feedback loops, review, commit |
 | `review` | **contract** | committee of seats with independent adjudication; checkpoint per issue, full committee at gates |
 | `project-profile` | own | doctor + init for the profiles the contract skills read; `profiles/slots.tsv` is the interface (ADR 0006) |
+| `decision-brief` | own | one-screen choice brief: concrete example, stakes, contrasting options with +/-, recommendation |
 | `show-in-pane`, `cmux-browser` | own | cmux pane display and browser automation |
 | `linear-cli`, `delegate`, `invoke-opencode-acp` | own | tooling skills, off by default |
 | from `vendor/` | symlinked | `diagnose`, `prototype`, `tdd`, `triage`, `zoom-out`, `improve-codebase-architecture`, `write-a-skill`, `teach`, `handoff`, `show-me-your-work`, `figure-it-out`, … |
