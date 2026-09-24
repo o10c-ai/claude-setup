@@ -77,6 +77,16 @@ reference, fetch it via `linear-cli` and read it fully. Establish the target
 repo, Initiative, feature name, and the three refs (`base_ref`, `target_ref`,
 `branch`).
 
+Then the **deferred issues** (`linear issue list --team <team> --label deferred`,
+one per past `orchestrate` run, ADR 0009). `to-prd` already sorted the items that
+touch this feature into the Solution or the Out of Scope list; check it did. An
+absorbed item lands in a slice body (its own slice when it has its own predicate,
+otherwise inside the slice it belongs to) with the deferred issue id in `## What to
+build`. When every item of a deferred issue is absorbed or explicitly left on an
+Out of Scope list, close that issue with a comment naming the Project; a
+half-consumed one stays open with the absorbed rows struck through. This is the
+only place deferred work re-enters: never mid-run, never as a wave.
+
 ### 2. Explore the codebase
 
 Use the repo's `CONTEXT.md` glossary and respect ADRs in the area touched.
@@ -220,7 +230,9 @@ The QA issue is the merge gate: the operator runs its script against the open PR
 and, on pass, merges and moves the Project to `Done`; on fail, files a rework issue
 blocking it.
 
-Do not modify the PRD document. Issues go to `Todo`.
+Do not modify the PRD document. Issues go to `Todo`. The issue list is now
+frozen for the run: `orchestrate` adds nothing to it, and what it discovers goes
+to its own deferred issue.
 
 ### 7. Hand off
 

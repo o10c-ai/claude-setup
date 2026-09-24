@@ -71,7 +71,7 @@ asks for `/project-profile`. Change a slot there first.
 
 | Slot | Contents | Default |
 |---|---|---|
-| `## Budgets` | per-implementer tool-call and wall-time caps, silence timeout | 40 calls / 45 min / 15 min silent |
+| `## Budgets` | per-implementer tool-call and wall-time caps, silence timeout, run budget (wall clock for the whole run; exhausted → one decision brief: ship reduced or extend once) | 40 calls / 45 min / 15 min silent / 1.5 × cap × runnable issues |
 | `## Isolation` | worktree + state recipe; keys read by `launch.sh`: `hook:` (add/env/up protocol), `base_ref:`, `worktrees:`, `workspace_prefix:` (cmux workspace title tag, default the repo name); named paths must exist | none (serial only) |
 | `## Concurrency` | max implementers in flight when Isolation is defined | 1 |
 | `## Drift check` | extra documents the drift checker reads besides PRD, issues, synthesis | none |

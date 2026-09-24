@@ -28,7 +28,7 @@ flowchart LR
 | `grill-with-visuals` | same, plus a plan with UI or structural decisions | the above plus a design spec of HEEx/Mermaid fragments | yes; falls back to `grill-with-docs` |
 | `to-prd` | the grilled conversation | a local PRD with Definition of Done predicate, Data Shape, Verification Harness, Throughput Checkpoint | no |
 | `to-issues` | the PRD | Linear Project + child issues; each issue = one runnable Predicate = one session; **one Project = one branch = one PR**, terminated by an integration issue and a human QA issue; bodies linted by `scripts/check-issue.sh` | no |
-| `orchestrate <project>` | a Linear Project (PRD + issues) | one implementer per issue, `.audit/<project>/synthesis.md`, drift verdicts, the Project at its Definition of Done | yes (`## Budgets`, `## Isolation`, `## Concurrency`, `## Drift check`) |
+| `orchestrate <project>` | a Linear Project (PRD + issues) | one implementer per issue, `.audit/<project>/synthesis.md`, drift verdicts, the Project at its ship line, one `deferred` issue | yes (`## Budgets`, `## Isolation`, `## Concurrency`, `## Drift check`) |
 | `autonomous-run <issue>` | one issue (directly, or as an implementer spawned by `orchestrate`) | a branch, a PR, `.audit/<issue-id>.tsv`, a fragment | wraps two contracts |
 | `implement` | the issue, the profile's feedback loops | a committed, gate-passing change | yes |
 | `review` | the diff, the issue's `review:` line, the profile's seat catalogue | a verdict per seat with evidence, on one head SHA | yes |
@@ -66,6 +66,27 @@ implementer autonomously; intent drift pauses the run for the operator.
 Preemption is a hard stop; the replacement starts on the same branch and tree,
 judges the existing commits against the predicate, and receives nothing
 authored by its predecessor.
+
+## The ship line and the deferred loop (ADR 0009)
+
+`orchestrate` fixes a **ship line** before its first spawn: the PRD's Definition
+of Done predicate, its Out of Scope list, a run budget, and a scope freeze on the
+issue list. Every finding, drift verdict and operator answer is classed against
+it with four questions (fails the DoD or ships a defect → B; outside the line →
+D; obvious reversible default → F; else P with a recommendation). A run ends at
+the line or pauses on one decision brief; it never ends with questions and never
+spawns a second wave of the same Project. What falls outside leaves through one
+**deferred issue** (label `deferred`), which the next `to-prd` reads at its first
+step, absorbing items into the new Solution or naming them on the new Out of
+Scope list, and which `to-issues` closes once consumed.
+
+```mermaid
+flowchart LR
+  O[orchestrate run N] -->|D findings| DI[deferred issue]
+  DI -->|read at step 1| P2[to-prd, Project N+1]
+  P2 -->|absorbed → Solution<br/>left → Out of Scope| I2[to-issues]
+  I2 -->|closes when consumed| DI
+```
 
 ## Grill discipline carried through
 

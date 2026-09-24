@@ -4,6 +4,8 @@
 - Trail silent for 15 minutes counts as overrun.
 - Migrations and multi-lib refactors: 60 calls / 60 minutes (the issue body says
   which; `to-issues` sizing already counts them double).
+- Run budget: 1.5 × 45 minutes × runnable issues, one extension of at most half
+  that on the budget decision brief.
 
 ## Isolation
 

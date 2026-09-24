@@ -64,6 +64,13 @@ A Linear Project's PRD document plus its issue bodies, read-only for the whole
 run. What every drift check compares against.
 _Avoid_: spec, requirements, the plan
 
+**Ship line**:
+What an `orchestrate` run fixes before its first spawn and ends at (ADR 0009):
+the PRD's Definition of Done predicate, its Out of Scope list, a run budget,
+and a scope freeze on the issue list. Every finding and every operator answer
+is classed against it; what falls outside is deferred, not asked about.
+_Avoid_: scope, goal, target, done criteria
+
 **Orchestrator**:
 The conductor session of a multi-issue run. Holds the intent, the dependency
 graph, the synthesis, and the trail; reads no code and implements nothing.
@@ -98,6 +105,13 @@ B blocks the merge, F is fixed without asking, D goes to one backlog issue,
 P is a product call whose recommendation ships unless the operator overrides.
 Only B and P reach the operator.
 _Avoid_: severity, priority, open question
+
+**Deferred issue**:
+The one Linear issue an `orchestrate` run leaves outside its Project, label
+`deferred`, listing every D finding with its source and recommendation. Read
+and consumed by the next `to-prd` / `to-issues` for the area; never worked on
+by the run that wrote it.
+_Avoid_: backlog, follow-ups, wave two, tech-debt issue
 
 **Turn budget**:
 The tool-call and wall-time cap an implementer runs under, measured by the

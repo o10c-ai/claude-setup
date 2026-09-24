@@ -11,6 +11,8 @@ This skill takes the current conversation context and codebase understanding and
 
 1. Explore the repo to understand the current state of the codebase, if you haven't already. Use the project's domain glossary vocabulary throughout the PRD, and respect any ADRs in the area you're touching.
 
+   Then read the open **deferred issues** for the area: `linear issue list --team <team> --label deferred` (one per past `orchestrate` run, ADR 0009; each is a table of items with a recommendation). Every item that touches this feature is decided here, once: absorbed (it becomes part of the Solution and a user story) or left (it goes on the Out of Scope list by name, so downstream sessions class it D without re-deciding). Say in the PRD header which deferred issues were read.
+
 2. Sketch out the seams at which you're going to test the feature. Existing seams should be preferred to new ones. Use the highest seam possible. If new seams are needed, propose them at the highest point you can.
 
 Check with the user that these seams match their expectations.
@@ -44,6 +46,8 @@ This list of user stories should be extremely extensive and cover all aspects of
 ## Definition of Done
 
 One falsifiable predicate for the whole feature: the command, test name, diff, or measurement that proves it shipped. Not prose. Examples: `mix test test/billing/subscription_correction_test.exs` green plus the corrections page rendering the new column; `pixel-diff 0` against `baseline/`; `curl …` returns the new field. Each slice in `/to-issues` will carry its own sub-predicate that rolls up to this one.
+
+This predicate and the Out of Scope list below are the **ship line** `orchestrate` fixes before its first spawn: the run ends when the predicate holds, and everything outside the two is deferred, not asked about. A prose predicate or a missing Out of Scope section stops the run at phase 0.
 
 ## Data Shape
 
@@ -90,7 +94,7 @@ Four lines, each kept even when it is `n/a: <reason>`:
 
 ## Out of Scope
 
-A description of the things that are out of scope for this PRD.
+The things that are out of scope for this PRD, **named one per line**. Include the adjacent work a session will be tempted to pull in (the neighbouring screen, the second caller of the write path, the cleanup the diff makes obvious) and every deferred-issue item you chose not to absorb, with its issue id. Downstream, each named item is class D by construction: no implementer builds it, no drift check raises it, no operator is asked about it.
 
 ## Further Notes
 
